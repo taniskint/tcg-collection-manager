@@ -3,10 +3,11 @@
     margin: 0;
     padding: 0;
     font-family: sans-serif;
+    color: #636363; /* sky- */
 }
 
 body {
-    background-color: white; /* Testing color */
+    background-color: #fff7ed; /* sun */
 }
 
 /* Get rid of link decorators. */
@@ -17,13 +18,12 @@ a {
 
 nav {
     padding-left: 8px;
-    background-color: red; /* Testing color */
+    background-color: #f2e6d4; /* sun- */
     display: flex;
     flex-direction: column;
 }
 
 .nav-header {
-    background-color: green; /* Testing color */
     height: 64px;
     display: flex;
     align-items: center;
@@ -34,7 +34,6 @@ nav {
 }
 
 .show-links {
-    background-color: maroon; /* Testing color */
     width: 64px;
     height: 100%;
     font-size: 2rem;
@@ -43,12 +42,11 @@ nav {
 }
 
 .show-links:hover {
-    background-color: pink; /* Testing color */
+    background-color: #fffdfb; /* sun+ */
     cursor: pointer;
 }
 
 .nav-links {
-    background-color: chartreuse; /* Testing color */
     list-style-type: none;
     padding-top: 4px;
     padding-bottom: 4px;
@@ -60,7 +58,7 @@ nav li {
 }
 
 nav li:hover {
-    background-color: magenta; /* Testing color */
+    background-color: #fffdfb; /* sun+ */
 }
 
 main {
