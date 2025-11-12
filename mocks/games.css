@@ -1,0 +1,18 @@
+main {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    gap: 16px;
+}
+
+.game-chiclet {
+    width: 200px;
+    height: 200px;
+    border: 1px solid var(--shade);
+    border-radius: 4px;
+    transition: box-shadow 0.1s linear;
+}
+
+.game-chiclet:hover {
+    box-shadow: 4px 4px 8px var(--shade);
+}

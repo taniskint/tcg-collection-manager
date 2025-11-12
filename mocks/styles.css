@@ -1,13 +1,21 @@
+:root {
+    --sun-plus: #fffdfb;
+    --sun: #fff7ed;
+    --sun-minus: #f2e6d4;
+    --sky-minus: #636363;
+    --shade: #303338;
+}
+
 /* I want to manage margins and padding myself, and prefer sans-serif fonts. */
 * {
     margin: 0;
     padding: 0;
     font-family: sans-serif;
-    color: #636363; /* sky- */
+    color: var(--sky-minus);
 }
 
 body {
-    background-color: #fff7ed; /* sun */
+    background-color: var(--sun);
 }
 
 /* Get rid of link decorators. */
@@ -18,7 +26,7 @@ a {
 
 nav {
     padding-left: 8px;
-    background-color: #f2e6d4; /* sun- */
+    background-color: var(--sun-minus);
     display: flex;
     flex-direction: column;
 }
@@ -42,7 +50,7 @@ nav {
 }
 
 .show-links:hover {
-    background-color: #fffdfb; /* sun+ */
+    background-color: var(--sun-plus);
     cursor: pointer;
 }
 
@@ -58,7 +66,7 @@ nav li {
 }
 
 nav li:hover {
-    background-color: #fffdfb; /* sun+ */
+    background-color: var(--sun-plus);
 }
 
 main {
