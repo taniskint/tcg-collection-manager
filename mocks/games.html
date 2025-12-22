@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Games</title>
+    <title>Games - TCG Collection Manager</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="games.css">
@@ -10,7 +10,7 @@
     <nav>
         <div class="nav-header">
             <a href="index.html"><p>TCG Collection Manager</p></a>
-	        <div id="show-links" class="show-links">+</div>
+            <div id="show-links" class="show-links">+</div>
         </div>
         <ul hidden id="nav-links" class="nav-links">
             <li><a href="games.html"><p>Games</p></a></li>
@@ -21,21 +21,52 @@
     </nav>
 
     <main>
-        <div class="game-chiclet"></div>
-        <div class="game-chiclet"></div>
-        <div class="game-chiclet"></div>
-        <div class="game-chiclet"></div>
-        <div class="game-chiclet"></div>
-        <div class="game-chiclet"></div>
-        <div class="game-chiclet"></div>
-        <div class="game-chiclet"></div>
-        <div class="game-chiclet"></div>
-        <div class="game-chiclet"></div>
-        <div class="game-chiclet"></div>
-        <div class="game-chiclet"></div>
-        <div class="game-chiclet"></div>
-        <div class="game-chiclet"></div>
-        <div class="game-chiclet"></div>
+        <section class="page-header">
+            <h1>Games</h1>
+            <p>Browse trading card games to explore sets and open booster packs.</p>
+        </section>
+
+        <section class="games-grid">
+            <a href="sets.html?game=ptcg" class="game-card">
+                <div class="game-logo">
+                    <img src="ptcg-logo.svg" alt="The Pokemon Trading Card Game logo.">
+                </div>
+                <div class="game-info">
+                    <h3>Pokemon TCG</h3>
+                    <p class="game-meta">14 sets available</p>
+                </div>
+            </a>
+
+            <a href="sets.html?game=mtg" class="game-card">
+                <div class="game-logo">
+                    <img src="mtg-logo.png" alt="The Magic: The Gathering logo.">
+                </div>
+                <div class="game-info">
+                    <h3>Magic: The Gathering</h3>
+                    <p class="game-meta">Coming soon</p>
+                </div>
+            </a>
+
+            <a href="sets.html?game=altered" class="game-card">
+                <div class="game-logo">
+                    <img src="altered-logo.png" alt="The Altered logo.">
+                </div>
+                <div class="game-info">
+                    <h3>Altered</h3>
+                    <p class="game-meta">Coming soon</p>
+                </div>
+            </a>
+
+            <a href="sets.html?game=riftbound" class="game-card">
+                <div class="game-logo">
+                    <img src="riftbound-logo.svg" alt="The Riftbound logo.">
+                </div>
+                <div class="game-info">
+                    <h3>Riftbound</h3>
+                    <p class="game-meta">Coming soon</p>
+                </div>
+            </a>
+        </section>
     </main>
 
     <script>
