@@ -34,6 +34,9 @@
                     <h1>Black Bolt & White Flare</h1>
                     <p>150 cards in this set</p>
                 </div>
+                <div class="page-header-actions">
+                    <button class="btn btn-primary" id="open-pack-btn">Open Booster Pack</button>
+                </div>
             </div>
         </section>
 
@@ -1091,12 +1094,345 @@
         </section>
     </main>
 
+    <!-- Open Booster Pack Modal -->
+    <div class="modal-overlay" id="open-pack-modal" hidden>
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Open Booster Pack</h2>
+                <button class="btn-icon modal-close" id="pack-modal-close">&times;</button>
+            </div>
+            <form class="modal-form" id="open-pack-form">
+                <div class="form-group">
+                    <label for="pack-type">Pack Type</label>
+                    <select id="pack-type" name="pack-type" required>
+                        <option value="">Select a pack...</option>
+                        <option value="zekrom">Zekrom Pack</option>
+                        <option value="reshiram">Reshiram Pack</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="pack-quantity">Quantity</label>
+                    <input type="number" id="pack-quantity" name="pack-quantity" min="1" max="36" value="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="pack-collection">Add cards to collection</label>
+                    <select id="pack-collection" name="pack-collection" required>
+                        <option value="">Select a collection...</option>
+                        <option value="main-pokemon">Main Pokemon Collection</option>
+                        <option value="sv-era">Scarlet & Violet Era</option>
+                        <option value="vintage">Vintage Holos</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="pack-modal-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Open Packs</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Pack Results Modal -->
+    <div class="modal-overlay" id="pack-results-modal" hidden>
+        <div class="modal modal-xl">
+            <div class="modal-header">
+                <h2>You opened 3 Zekrom Packs!</h2>
+                <button class="btn-icon modal-close" id="results-modal-close">&times;</button>
+            </div>
+            <div class="modal-body pack-results-body">
+                <div class="pack-results-summary">
+                    <p class="pack-results-info"><strong>30 cards</strong> added to <strong>Main Pokemon Collection</strong></p>
+                    <div class="pack-results-stats">
+                        <span class="stat-pill">Common: 15</span>
+                        <span class="stat-pill">Uncommon: 9</span>
+                        <span class="stat-pill">Rare: 3</span>
+                        <span class="stat-pill stat-pill-holo">Double Rare: 2</span>
+                        <span class="stat-pill stat-pill-holo">Ultra Rare: 1</span>
+                    </div>
+                </div>
+                <div class="pack-results-grid">
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Bulbasaur</p>
+                            <p class="pack-card-rarity">Common</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Charmander</p>
+                            <p class="pack-card-rarity">Common</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Squirtle</p>
+                            <p class="pack-card-rarity">Common</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Pikachu</p>
+                            <p class="pack-card-rarity">Common</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Eevee</p>
+                            <p class="pack-card-rarity">Common</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Rare Candy</p>
+                            <p class="pack-card-rarity">Uncommon</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Ultra Ball</p>
+                            <p class="pack-card-rarity">Uncommon</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Professor's Research</p>
+                            <p class="pack-card-rarity">Uncommon</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Charizard</p>
+                            <p class="pack-card-rarity">Rare</p>
+                        </div>
+                    </div>
+                    <div class="pack-card pack-card-holo">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Charizard ex</p>
+                            <p class="pack-card-rarity">Double Rare</p>
+                        </div>
+                    </div>
+                    <!-- Pack 2 -->
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Oddish</p>
+                            <p class="pack-card-rarity">Common</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Gloom</p>
+                            <p class="pack-card-rarity">Common</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Vulpix</p>
+                            <p class="pack-card-rarity">Common</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Growlithe</p>
+                            <p class="pack-card-rarity">Common</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Ponyta</p>
+                            <p class="pack-card-rarity">Common</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Nest Ball</p>
+                            <p class="pack-card-rarity">Uncommon</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Level Ball</p>
+                            <p class="pack-card-rarity">Uncommon</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Switch</p>
+                            <p class="pack-card-rarity">Uncommon</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Arcanine</p>
+                            <p class="pack-card-rarity">Rare</p>
+                        </div>
+                    </div>
+                    <div class="pack-card pack-card-holo">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Typhlosion ex</p>
+                            <p class="pack-card-rarity">Double Rare</p>
+                        </div>
+                    </div>
+                    <!-- Pack 3 -->
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Psyduck</p>
+                            <p class="pack-card-rarity">Common</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Golduck</p>
+                            <p class="pack-card-rarity">Common</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Magnemite</p>
+                            <p class="pack-card-rarity">Common</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Magneton</p>
+                            <p class="pack-card-rarity">Common</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Voltorb</p>
+                            <p class="pack-card-rarity">Common</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Super Rod</p>
+                            <p class="pack-card-rarity">Uncommon</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Pal Pad</p>
+                            <p class="pack-card-rarity">Uncommon</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Energy Search</p>
+                            <p class="pack-card-rarity">Uncommon</p>
+                        </div>
+                    </div>
+                    <div class="pack-card">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Magnezone</p>
+                            <p class="pack-card-rarity">Rare</p>
+                        </div>
+                    </div>
+                    <div class="pack-card pack-card-holo">
+                        <div class="pack-card-image"></div>
+                        <div class="pack-card-info">
+                            <p class="pack-card-name">Mewtwo ex</p>
+                            <p class="pack-card-rarity">Ultra Rare</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="results-open-another">Open More Packs</button>
+                <button class="btn btn-primary" id="results-done">Done</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const showLinksDiv = document.getElementById("show-links");
         const navLinksUL = document.getElementById("nav-links");
 
         showLinksDiv.addEventListener("click", () => {
             navLinksUL.hidden = !navLinksUL.hidden;
+        });
+
+        // Open Pack Modal
+        const openPackBtn = document.getElementById("open-pack-btn");
+        const openPackModal = document.getElementById("open-pack-modal");
+        const packModalClose = document.getElementById("pack-modal-close");
+        const packModalCancel = document.getElementById("pack-modal-cancel");
+        const openPackForm = document.getElementById("open-pack-form");
+
+        // Pack Results Modal
+        const packResultsModal = document.getElementById("pack-results-modal");
+        const resultsModalClose = document.getElementById("results-modal-close");
+        const resultsOpenAnother = document.getElementById("results-open-another");
+        const resultsDone = document.getElementById("results-done");
+
+        openPackBtn.addEventListener("click", () => {
+            openPackModal.hidden = false;
+        });
+
+        packModalClose.addEventListener("click", () => {
+            openPackModal.hidden = true;
+        });
+
+        packModalCancel.addEventListener("click", () => {
+            openPackModal.hidden = true;
+        });
+
+        openPackModal.addEventListener("click", (e) => {
+            if (e.target === openPackModal) {
+                openPackModal.hidden = true;
+            }
+        });
+
+        openPackForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            openPackModal.hidden = true;
+            packResultsModal.hidden = false;
+        });
+
+        resultsModalClose.addEventListener("click", () => {
+            packResultsModal.hidden = true;
+        });
+
+        resultsDone.addEventListener("click", () => {
+            packResultsModal.hidden = true;
+        });
+
+        resultsOpenAnother.addEventListener("click", () => {
+            packResultsModal.hidden = true;
+            openPackModal.hidden = false;
+        });
+
+        packResultsModal.addEventListener("click", (e) => {
+            if (e.target === packResultsModal) {
+                packResultsModal.hidden = true;
+            }
         });
     </script>
 </body>

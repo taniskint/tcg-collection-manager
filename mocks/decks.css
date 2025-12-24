@@ -1,0 +1,264 @@
+/* Override main padding for more breathing room */
+main {
+    padding: 24px 32px;
+}
+
+/* Page header */
+.page-header {
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.page-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.page-header-text h1 {
+    color: var(--text-emphasis);
+    margin-bottom: 4px;
+}
+
+.page-header-actions {
+    flex-shrink: 0;
+}
+
+/* Button styles */
+.btn {
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.1s linear, box-shadow 0.1s linear;
+}
+
+.btn-primary {
+    background-color: var(--text-emphasis);
+    color: var(--bg-primary);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 0 8px var(--border);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background-color: var(--bg-recessed);
+}
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    font-size: 1.1rem;
+    border-radius: 4px;
+    transition: background-color 0.1s linear;
+}
+
+.btn-icon:hover {
+    background-color: var(--bg-recessed);
+}
+
+.btn-danger:hover {
+    background-color: #cb7459;
+    color: var(--bg-primary);
+}
+
+/* Decks grid */
+.decks-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.deck-chiclet {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: var(--bg-elevated);
+    transition: box-shadow 0.1s linear;
+}
+
+.deck-chiclet:hover {
+    box-shadow: 0 0 8px var(--border);
+}
+
+.deck-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.deck-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.deck-info h3 {
+    color: var(--text-emphasis);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.deck-meta {
+    font-size: 0.9rem;
+}
+
+.deck-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+/* Modal styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    z-index: 1000;
+}
+
+.modal-overlay[hidden] {
+    display: none;
+}
+
+.modal {
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    width: 100%;
+    max-width: 450px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid var(--bg-recessed);
+}
+
+.modal-header h2 {
+    color: var(--text-emphasis);
+    font-size: 1.25rem;
+}
+
+.modal-close {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.modal-form {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.form-group label {
+    font-weight: 500;
+    color: var(--text-emphasis);
+}
+
+.form-group input,
+.form-group select {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 1rem;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--text-emphasis);
+    box-shadow: 0 0 4px var(--border);
+}
+
+.form-group input::placeholder {
+    color: var(--text-primary);
+    opacity: 0.7;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    main {
+        padding: 16px;
+    }
+
+    .page-header-content {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .page-header-actions {
+        display: flex;
+    }
+
+    .page-header-actions .btn {
+        flex: 1;
+    }
+
+    .deck-chiclet {
+        flex-wrap: wrap;
+    }
+
+    .deck-logo {
+        width: 48px;
+        height: 48px;
+    }
+
+    .deck-info {
+        flex: 1 1 calc(100% - 64px - 16px);
+    }
+
+    .deck-actions {
+        width: 100%;
+        justify-content: flex-end;
+        border-top: 1px solid var(--bg-recessed);
+        padding-top: 12px;
+        margin-top: 4px;
+    }
+}
