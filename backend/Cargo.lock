@@ -95,6 +95,7 @@ dependencies = [
  "rocket",
  "rusqlite",
  "serde",
+ "toml",
  "uuid",
 ]
 
