@@ -186,6 +186,27 @@ fn create_session(
     Ok(Status::Ok)
 }
 
+#[delete("/sessions/<session_id>")]
+fn delete_session(
+    db: &State<DbConn>,
+    cookies: &CookieJar<'_>,
+    session_id: &str,
+) -> Status {
+    let conn = db.0.lock().unwrap();
+
+    let rows_affected = conn
+        .execute("DELETE FROM sessions WHERE id = ?1", params![session_id])
+        .unwrap_or(0);
+
+    cookies.remove(Cookie::from("session_id"));
+
+    if rows_affected > 0 {
+        Status::Ok
+    } else {
+        Status::NotFound
+    }
+}
+
 #[launch]
 fn rocket() -> _ {
     let conn = Connection::open("tcg.db").expect("Failed to open database");
@@ -193,5 +214,5 @@ fn rocket() -> _ {
 
     rocket::build()
         .manage(DbConn(Mutex::new(conn)))
-        .mount("/", routes![index, create_user, create_session])
+        .mount("/", routes![index, create_user, create_session, delete_session])
 }
