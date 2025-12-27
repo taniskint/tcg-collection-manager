@@ -54,6 +54,13 @@ struct GameResponse {
     id: i64,
 }
 
+#[derive(Serialize)]
+struct GameListItem {
+    id: i64,
+    name: String,
+    image_url: Option<String>,
+}
+
 struct DbConn(Mutex<Connection>);
 
 struct AdminAuth;
@@ -176,6 +183,31 @@ fn create_game(
     Ok(Json(GameResponse { id }))
 }
 
+#[get("/games")]
+fn list_games(db: &State<DbConn>) -> Result<Json<Vec<GameListItem>>, (Status, Json<ErrorResponse>)> {
+    let conn = db.0.lock().unwrap();
+
+    let games = game::list(&conn).map_err(|_| {
+        (
+            Status::InternalServerError,
+            Json(ErrorResponse {
+                error: "Failed to list games".to_string(),
+            }),
+        )
+    })?;
+
+    let items = games
+        .into_iter()
+        .map(|g| GameListItem {
+            id: g.id,
+            name: g.name,
+            image_url: g.image_url,
+        })
+        .collect();
+
+    Ok(Json(items))
+}
+
 #[launch]
 fn rocket() -> _ {
     let config = load_config();
@@ -185,5 +217,5 @@ fn rocket() -> _ {
     rocket::build()
         .manage(config)
         .manage(DbConn(Mutex::new(conn)))
-        .mount("/", routes![index, create_user, create_session, delete_session, create_game])
+        .mount("/", routes![index, create_user, create_session, delete_session, create_game, list_games])
 }

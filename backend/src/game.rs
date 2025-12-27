@@ -1,5 +1,11 @@
 use rusqlite::{params, Connection, Error as SqliteError};
 
+pub struct Game {
+    pub id: i64,
+    pub name: String,
+    pub image_url: Option<String>,
+}
+
 #[derive(Debug)]
 pub enum CreateGameError {
     NameExists,
@@ -21,6 +27,22 @@ pub fn create(conn: &Connection, name: &str, image_url: Option<&str>) -> Result<
     })?;
 
     Ok(conn.last_insert_rowid())
+}
+
+// TODO: Add set_count and card_count fields when those features are implemented
+pub fn list(conn: &Connection) -> Result<Vec<Game>, SqliteError> {
+    let mut stmt = conn.prepare("SELECT id, name, image_url FROM games")?;
+    let games = stmt
+        .query_map([], |row| {
+            Ok(Game {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                image_url: row.get(2)?,
+            })
+        })?
+        .collect::<Result<Vec<_>, _>>()?;
+
+    Ok(games)
 }
 
 pub fn init_table(conn: &Connection) -> Result<(), SqliteError> {
