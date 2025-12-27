@@ -3,12 +3,13 @@ extern crate rocket;
 
 use std::sync::Mutex;
 
-use bcrypt::{hash, DEFAULT_COST};
-use rocket::http::Status;
+use bcrypt::{hash, verify, DEFAULT_COST};
+use rocket::http::{Cookie, CookieJar, Status};
 use rocket::serde::json::Json;
 use rocket::State;
 use rusqlite::{params, Connection, Error as SqliteError};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Deserialize)]
 struct CreateUserRequest {
@@ -27,6 +28,12 @@ struct ErrorResponse {
     error: String,
 }
 
+#[derive(Deserialize)]
+struct LoginRequest {
+    email_or_username: String,
+    password: String,
+}
+
 struct DbConn(Mutex<Connection>);
 
 fn init_db(conn: &Connection) -> Result<(), SqliteError> {
@@ -36,6 +43,15 @@ fn init_db(conn: &Connection) -> Result<(), SqliteError> {
             username TEXT NOT NULL UNIQUE,
             email TEXT NOT NULL UNIQUE,
             password_hash TEXT NOT NULL
+        )",
+        [],
+    )?;
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS sessions (
+            id TEXT PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            expires_at TEXT NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id)
         )",
         [],
     )?;
@@ -102,6 +118,74 @@ fn create_user(
     Ok(Json(UserResponse { id }))
 }
 
+#[post("/sessions", format = "json", data = "<login>")]
+fn create_session(
+    db: &State<DbConn>,
+    cookies: &CookieJar<'_>,
+    login: Json<LoginRequest>,
+) -> Result<Status, (Status, Json<ErrorResponse>)> {
+    let conn = db.0.lock().unwrap();
+
+    // Find user by email or username
+    let result: Result<(i64, String), _> = conn.query_row(
+        "SELECT id, password_hash FROM users WHERE email = ?1 OR username = ?1",
+        params![&login.email_or_username],
+        |row| Ok((row.get(0)?, row.get(1)?)),
+    );
+
+    let (user_id, password_hash) = result.map_err(|_| {
+        (
+            Status::Unauthorized,
+            Json(ErrorResponse {
+                error: "Invalid credentials".to_string(),
+            }),
+        )
+    })?;
+
+    // Verify password
+    let valid = verify(&login.password, &password_hash).map_err(|_| {
+        (
+            Status::InternalServerError,
+            Json(ErrorResponse {
+                error: "Failed to verify password".to_string(),
+            }),
+        )
+    })?;
+
+    if !valid {
+        return Err((
+            Status::Unauthorized,
+            Json(ErrorResponse {
+                error: "Invalid credentials".to_string(),
+            }),
+        ));
+    }
+
+    // Create session
+    let session_id = Uuid::new_v4().to_string();
+    let expires_at = chrono::Utc::now()
+        .checked_add_signed(chrono::Duration::days(7))
+        .unwrap()
+        .to_rfc3339();
+
+    conn.execute(
+        "INSERT INTO sessions (id, user_id, expires_at) VALUES (?1, ?2, ?3)",
+        params![&session_id, user_id, &expires_at],
+    )
+    .map_err(|_| {
+        (
+            Status::InternalServerError,
+            Json(ErrorResponse {
+                error: "Failed to create session".to_string(),
+            }),
+        )
+    })?;
+
+    cookies.add(Cookie::new("session_id", session_id));
+
+    Ok(Status::Ok)
+}
+
 #[launch]
 fn rocket() -> _ {
     let conn = Connection::open("tcg.db").expect("Failed to open database");
@@ -109,5 +193,5 @@ fn rocket() -> _ {
 
     rocket::build()
         .manage(DbConn(Mutex::new(conn)))
-        .mount("/", routes![index, create_user])
+        .mount("/", routes![index, create_user, create_session])
 }
