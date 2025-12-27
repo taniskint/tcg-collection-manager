@@ -12,7 +12,11 @@ pub enum CreateGameError {
     DatabaseError,
 }
 
-pub fn create(conn: &Connection, name: &str, image_url: Option<&str>) -> Result<i64, CreateGameError> {
+pub fn create(
+    conn: &Connection,
+    name: &str,
+    image_url: Option<&str>,
+) -> Result<i64, CreateGameError> {
     conn.execute(
         "INSERT INTO games (name, image_url) VALUES (?1, ?2)",
         params![name, image_url],

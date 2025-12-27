@@ -20,8 +20,7 @@ pub fn create(
         |row| Ok((row.get(0)?, row.get(1)?)),
     );
 
-    let (user_id, password_hash) =
-        result.map_err(|_| CreateSessionError::InvalidCredentials)?;
+    let (user_id, password_hash) = result.map_err(|_| CreateSessionError::InvalidCredentials)?;
 
     let valid = verify(password, &password_hash).map_err(|_| CreateSessionError::VerifyError)?;
 
