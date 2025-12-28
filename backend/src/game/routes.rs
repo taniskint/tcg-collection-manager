@@ -21,6 +21,7 @@ pub struct GameListItem {
     id: i64,
     name: String,
     image_url: Option<String>,
+    set_count: i64,
 }
 
 #[post("/", format = "json", data = "<req>")]
@@ -44,6 +45,30 @@ pub fn create(
     Ok(Json(GameResponse { id }))
 }
 
+#[get("/<game_id>")]
+pub fn get(
+    db: &State<DbConn>,
+    game_id: i64,
+) -> Result<Json<GameListItem>, (Status, Json<ErrorResponse>)> {
+    let conn = db.0.lock().unwrap();
+
+    let game = super::get(&conn, game_id)
+        .map_err(|_| {
+            (
+                Status::InternalServerError,
+                Json(ErrorResponse::new("Failed to get game")),
+            )
+        })?
+        .ok_or_else(|| (Status::NotFound, Json(ErrorResponse::new("Game not found"))))?;
+
+    Ok(Json(GameListItem {
+        id: game.id,
+        name: game.name,
+        image_url: game.image_url,
+        set_count: game.set_count,
+    }))
+}
+
 #[get("/")]
 pub fn list(db: &State<DbConn>) -> Result<Json<Vec<GameListItem>>, (Status, Json<ErrorResponse>)> {
     let conn = db.0.lock().unwrap();
@@ -61,6 +86,7 @@ pub fn list(db: &State<DbConn>) -> Result<Json<Vec<GameListItem>>, (Status, Json
             id: g.id,
             name: g.name,
             image_url: g.image_url,
+            set_count: g.set_count,
         })
         .collect();
 
@@ -68,5 +94,5 @@ pub fn list(db: &State<DbConn>) -> Result<Json<Vec<GameListItem>>, (Status, Json
 }
 
 pub fn routes() -> Vec<rocket::Route> {
-    routes![create, list]
+    routes![create, get, list]
 }

@@ -1,8 +1,10 @@
 #[macro_use]
 extern crate rocket;
 
+mod card;
 mod game;
 mod session;
+mod set;
 mod user;
 
 use std::fs;
@@ -63,6 +65,8 @@ fn init_db(conn: &Connection) {
     user::init_table(conn).expect("Failed to initialize users table");
     session::init_table(conn).expect("Failed to initialize sessions table");
     game::init_table(conn).expect("Failed to initialize games table");
+    set::init_table(conn).expect("Failed to initialize sets table");
+    card::init_table(conn).expect("Failed to initialize cards table");
 }
 
 fn load_config() -> Config {
@@ -88,4 +92,6 @@ fn rocket() -> _ {
         .mount("/users", user::routes::routes())
         .mount("/sessions", session::routes::routes())
         .mount("/games", game::routes::routes())
+        .mount("/games", set::routes::routes())
+        .mount("/games", card::routes::routes())
 }
