@@ -60,7 +60,7 @@ fn test_create_single_card() {
         .post(format!("/games/{}/sets/{}/cards", game_id, set_id))
         .header(ContentType::JSON)
         .header(Header::new("Authorization", admin_auth_header()))
-        .body(json!([{ "name": "Pikachu" }]).to_string())
+        .body(json!([{ "name": "Pikachu", "collector_number": "025" }]).to_string())
         .dispatch();
 
     assert_eq!(response.status(), Status::Ok);
@@ -78,9 +78,9 @@ fn test_create_multiple_cards() {
     let set_id = create_set(&client, game_id, "Shrouded Fable");
 
     let cards = json!([
-        { "name": "Pikachu" },
-        { "name": "Charizard" },
-        { "name": "Bulbasaur" }
+        { "name": "Pikachu", "collector_number": "025" },
+        { "name": "Charizard", "collector_number": "006" },
+        { "name": "Bulbasaur", "collector_number": "001" }
     ]);
 
     let response = client
@@ -105,6 +105,7 @@ fn test_create_card_with_all_fields() {
 
     let cards = json!([{
         "name": "Pikachu",
+        "collector_number": "025",
         "image_url": "https://example.com/pikachu.png",
         "attributes": {
             "rarity": "common",
@@ -124,6 +125,7 @@ fn test_create_card_with_all_fields() {
 
     let card: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
     assert_eq!(card["name"], "Pikachu");
+    assert_eq!(card["collector_number"], "025");
     assert_eq!(card["image_url"], "https://example.com/pikachu.png");
     assert_eq!(card["attributes"]["rarity"], "common");
     assert_eq!(card["attributes"]["type"], "electric");
@@ -138,7 +140,7 @@ fn test_create_cards_set_not_found() {
         .post(format!("/games/{}/sets/99999/cards", game_id))
         .header(ContentType::JSON)
         .header(Header::new("Authorization", admin_auth_header()))
-        .body(json!([{ "name": "Pikachu" }]).to_string())
+        .body(json!([{ "name": "Pikachu", "collector_number": "025" }]).to_string())
         .dispatch();
 
     assert_eq!(response.status(), Status::NotFound);
@@ -156,7 +158,7 @@ fn test_create_cards_without_auth() {
     let response = client
         .post(format!("/games/{}/sets/{}/cards", game_id, set_id))
         .header(ContentType::JSON)
-        .body(json!([{ "name": "Pikachu" }]).to_string())
+        .body(json!([{ "name": "Pikachu", "collector_number": "025" }]).to_string())
         .dispatch();
 
     assert_eq!(response.status(), Status::Unauthorized);
@@ -169,7 +171,7 @@ fn test_create_card_empty_attributes() {
     let set_id = create_set(&client, game_id, "Shrouded Fable");
 
     // Card without attributes specified
-    let cards = json!([{ "name": "Pikachu" }]);
+    let cards = json!([{ "name": "Pikachu", "collector_number": "025" }]);
     let body = create_cards(&client, game_id, set_id, cards);
     let card_id = body["ids"][0].as_i64().unwrap();
 
@@ -180,6 +182,8 @@ fn test_create_card_empty_attributes() {
     let card: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
     // Empty attributes should be an empty object
     assert!(card["attributes"].as_object().unwrap().is_empty());
+    // collector_number should still be present
+    assert_eq!(card["collector_number"], "025");
 }
 
 // ============================================================================
@@ -194,6 +198,7 @@ fn test_get_card_success() {
 
     let cards = json!([{
         "name": "Pikachu",
+        "collector_number": "025",
         "image_url": "https://example.com/pikachu.png",
         "attributes": { "rarity": "common" }
     }]);
@@ -209,6 +214,7 @@ fn test_get_card_success() {
     let card: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
     assert_eq!(card["id"], card_id);
     assert_eq!(card["name"], "Pikachu");
+    assert_eq!(card["collector_number"], "025");
     assert_eq!(card["image_url"], "https://example.com/pikachu.png");
     assert_eq!(card["attributes"]["rarity"], "common");
 }
@@ -235,7 +241,7 @@ fn test_get_card_no_auth_required() {
     let game_id = create_game(&client, "Pokemon TCG");
     let set_id = create_set(&client, game_id, "Shrouded Fable");
 
-    let cards = json!([{ "name": "Pikachu" }]);
+    let cards = json!([{ "name": "Pikachu", "collector_number": "025" }]);
     let body = create_cards(&client, game_id, set_id, cards);
     let card_id = body["ids"][0].as_i64().unwrap();
 
@@ -274,9 +280,9 @@ fn test_list_cards_multiple() {
     let set_id = create_set(&client, game_id, "Shrouded Fable");
 
     let cards = json!([
-        { "name": "Pikachu" },
-        { "name": "Charizard" },
-        { "name": "Bulbasaur" }
+        { "name": "Pikachu", "collector_number": "025" },
+        { "name": "Charizard", "collector_number": "006" },
+        { "name": "Bulbasaur", "collector_number": "001" }
     ]);
     create_cards(&client, game_id, set_id, cards);
 
@@ -304,8 +310,8 @@ fn test_list_cards_only_for_specified_set() {
     let set1_id = create_set(&client, game_id, "Shrouded Fable");
     let set2_id = create_set(&client, game_id, "Surging Sparks");
 
-    create_cards(&client, game_id, set1_id, json!([{ "name": "Pikachu" }]));
-    create_cards(&client, game_id, set2_id, json!([{ "name": "Charizard" }]));
+    create_cards(&client, game_id, set1_id, json!([{ "name": "Pikachu", "collector_number": "025" }]));
+    create_cards(&client, game_id, set2_id, json!([{ "name": "Charizard", "collector_number": "006" }]));
 
     // List cards for set 1
     let response = client
@@ -330,6 +336,7 @@ fn test_card_attributes_preserved() {
 
     let cards = json!([{
         "name": "Pikachu",
+        "collector_number": "025",
         "attributes": {
             "rarity": "common",
             "type": "electric",

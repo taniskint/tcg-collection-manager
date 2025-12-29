@@ -10,6 +10,7 @@ use crate::{AdminAuth, DbConn, ErrorResponse};
 #[derive(Deserialize)]
 pub struct CreateCardRequest {
     name: String,
+    collector_number: String,
     image_url: Option<String>,
     #[serde(default)]
     attributes: HashMap<String, String>,
@@ -24,6 +25,7 @@ pub struct CardsResponse {
 pub struct CardItem {
     id: i64,
     name: String,
+    collector_number: String,
     image_url: Option<String>,
     attributes: HashMap<String, String>,
 }
@@ -43,6 +45,7 @@ pub fn create(
         .iter()
         .map(|c| super::CreateCardInput {
             name: &c.name,
+            collector_number: &c.collector_number,
             image_url: c.image_url.as_deref(),
             attributes: &c.attributes,
         })
@@ -83,6 +86,7 @@ pub fn get(
     Ok(Json(CardItem {
         id: card.id,
         name: card.name,
+        collector_number: card.collector_number,
         image_url: card.image_url,
         attributes: card.attributes,
     }))
@@ -109,6 +113,7 @@ pub fn list(
         .map(|c| CardItem {
             id: c.id,
             name: c.name,
+            collector_number: c.collector_number,
             image_url: c.image_url,
             attributes: c.attributes,
         })

@@ -1,0 +1,753 @@
+openapi: 3.0.3
+info:
+  title: TCG Collection Manager API
+  description: REST API for managing trading card game collections, including games, sets, cards, users, and sessions.
+  version: 0.1.0
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+
+components:
+  securitySchemes:
+    AdminApiKey:
+      type: http
+      scheme: bearer
+      description: Admin API key for protected endpoints
+
+  schemas:
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "Game not found"
+
+    CreateUserRequest:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          example: "johndoe"
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        password:
+          type: string
+          format: password
+          example: "securepassword123"
+
+    UserResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+
+    LoginRequest:
+      type: object
+      required:
+        - email_or_username
+        - password
+      properties:
+        email_or_username:
+          type: string
+          description: Either the username or email address
+          example: "johndoe"
+        password:
+          type: string
+          format: password
+          example: "securepassword123"
+
+    CreateGameRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: "Pokemon TCG"
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://example.com/pokemon-logo.png"
+
+    GameResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+
+    Game:
+      type: object
+      required:
+        - id
+        - name
+        - set_count
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "Pokemon TCG"
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://example.com/pokemon-logo.png"
+        set_count:
+          type: integer
+          format: int64
+          description: Number of sets in this game
+          example: 5
+
+    CreateSetRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: "Shrouded Fable"
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://example.com/shrouded-fable.png"
+
+    SetResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+
+    Set:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "Shrouded Fable"
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://example.com/shrouded-fable.png"
+
+    CreateCardRequest:
+      type: object
+      required:
+        - name
+        - collector_number
+      properties:
+        name:
+          type: string
+          example: "Pikachu"
+        collector_number:
+          type: string
+          description: The card's collector number within the set (can include letters/symbols)
+          example: "025"
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://example.com/pikachu.png"
+        attributes:
+          type: object
+          additionalProperties:
+            type: string
+          description: Key-value pairs for card attributes (e.g., rarity, type)
+          example:
+            rarity: "common"
+            type: "electric"
+
+    CardsResponse:
+      type: object
+      required:
+        - ids
+      properties:
+        ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+          example: [1, 2, 3]
+
+    Card:
+      type: object
+      required:
+        - id
+        - name
+        - collector_number
+        - attributes
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "Pikachu"
+        collector_number:
+          type: string
+          description: The card's collector number within the set (can include letters/symbols)
+          example: "025"
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://example.com/pikachu.png"
+        attributes:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            rarity: "common"
+            type: "electric"
+
+paths:
+  /:
+    get:
+      summary: Health check
+      description: Simple health check endpoint
+      operationId: index
+      responses:
+        '200':
+          description: Server is running
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Hello, world!"
+
+  /users:
+    post:
+      summary: Create a new user
+      description: Register a new user account with username, email, and password
+      operationId: createUser
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '200':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '409':
+          description: Username or email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                usernameExists:
+                  value:
+                    error: "Username already exists"
+                emailExists:
+                  value:
+                    error: "Email already exists"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /sessions:
+    post:
+      summary: Login (create session)
+      description: Authenticate with username/email and password. On success, sets a session_id cookie.
+      operationId: login
+      tags:
+        - Sessions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: "session_id=abc123-def456; Path=/"
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Invalid credentials"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /sessions/{session_id}:
+    delete:
+      summary: Logout (delete session)
+      description: Delete a session by ID. Also removes the session_id cookie.
+      operationId: logout
+      tags:
+        - Sessions
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The session ID to delete
+          example: "abc123-def456-ghi789"
+      responses:
+        '200':
+          description: Session deleted successfully
+        '404':
+          description: Session not found
+
+  /games:
+    get:
+      summary: List all games
+      description: Get a list of all trading card games
+      operationId: listGames
+      tags:
+        - Games
+      responses:
+        '200':
+          description: List of games
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Game'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create a new game
+      description: Create a new trading card game (admin only)
+      operationId: createGame
+      tags:
+        - Games
+      security:
+        - AdminApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGameRequest'
+      responses:
+        '200':
+          description: Game created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameResponse'
+        '401':
+          description: Unauthorized - missing or invalid API key
+        '409':
+          description: Game already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Game already exists"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /games/{game_id}:
+    get:
+      summary: Get a game by ID
+      description: Get details of a specific trading card game
+      operationId: getGame
+      tags:
+        - Games
+      parameters:
+        - name: game_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The game ID
+          example: 1
+      responses:
+        '200':
+          description: Game details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        '404':
+          description: Game not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Game not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /games/{game_id}/sets:
+    get:
+      summary: List sets for a game
+      description: Get all sets belonging to a specific game
+      operationId: listSets
+      tags:
+        - Sets
+      parameters:
+        - name: game_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The game ID
+          example: 1
+      responses:
+        '200':
+          description: List of sets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Set'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create a new set
+      description: Create a new set within a game (admin only)
+      operationId: createSet
+      tags:
+        - Sets
+      security:
+        - AdminApiKey: []
+      parameters:
+        - name: game_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The game ID
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSetRequest'
+      responses:
+        '200':
+          description: Set created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetResponse'
+        '401':
+          description: Unauthorized - missing or invalid API key
+        '404':
+          description: Game not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Game not found"
+        '409':
+          description: Set name already exists for this game
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Set name already exists for this game"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /games/{game_id}/sets/{set_id}:
+    get:
+      summary: Get a set by ID
+      description: Get details of a specific set
+      operationId: getSet
+      tags:
+        - Sets
+      parameters:
+        - name: game_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The game ID
+          example: 1
+        - name: set_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The set ID
+          example: 1
+      responses:
+        '200':
+          description: Set details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Set'
+        '404':
+          description: Set not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Set not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /games/{game_id}/sets/{set_id}/cards:
+    get:
+      summary: List cards in a set
+      description: Get all cards belonging to a specific set
+      operationId: listCards
+      tags:
+        - Cards
+      parameters:
+        - name: game_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The game ID
+          example: 1
+        - name: set_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The set ID
+          example: 1
+      responses:
+        '200':
+          description: List of cards
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create cards (batch)
+      description: Create one or more cards in a set (admin only). Accepts an array of cards.
+      operationId: createCards
+      tags:
+        - Cards
+      security:
+        - AdminApiKey: []
+      parameters:
+        - name: game_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The game ID
+          example: 1
+        - name: set_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The set ID
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateCardRequest'
+            example:
+              - name: "Pikachu"
+                collector_number: "025"
+                image_url: "https://example.com/pikachu.png"
+                attributes:
+                  rarity: "common"
+                  type: "electric"
+              - name: "Charizard"
+                collector_number: "006"
+                attributes:
+                  rarity: "rare"
+                  type: "fire"
+      responses:
+        '200':
+          description: Cards created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardsResponse'
+        '401':
+          description: Unauthorized - missing or invalid API key
+        '404':
+          description: Set not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Set not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /games/{game_id}/sets/{set_id}/cards/{card_id}:
+    get:
+      summary: Get a card by ID
+      description: Get details of a specific card
+      operationId: getCard
+      tags:
+        - Cards
+      parameters:
+        - name: game_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The game ID
+          example: 1
+        - name: set_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The set ID
+          example: 1
+        - name: card_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The card ID
+          example: 1
+      responses:
+        '200':
+          description: Card details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+        '404':
+          description: Card not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Card not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+tags:
+  - name: Users
+    description: User registration
+  - name: Sessions
+    description: Authentication (login/logout)
+  - name: Games
+    description: Trading card games
+  - name: Sets
+    description: Card sets within games
+  - name: Cards
+    description: Individual cards within sets
