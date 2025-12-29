@@ -7,6 +7,9 @@ mod session;
 mod set;
 mod user;
 
+#[cfg(test)]
+pub mod test_helpers;
+
 use std::fs;
 use std::sync::Mutex;
 
@@ -15,9 +18,17 @@ use rocket::request::{FromRequest, Outcome, Request};
 use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct Config {
-    admin_api_key: String,
+    pub admin_api_key: String,
+}
+
+impl Config {
+    pub fn test_config(admin_api_key: &str) -> Self {
+        Self {
+            admin_api_key: admin_api_key.to_string(),
+        }
+    }
 }
 
 #[derive(Serialize)]
@@ -61,7 +72,7 @@ impl<'r> FromRequest<'r> for AdminAuth {
     }
 }
 
-fn init_db(conn: &Connection) {
+pub fn init_db(conn: &Connection) {
     user::init_table(conn).expect("Failed to initialize users table");
     session::init_table(conn).expect("Failed to initialize sessions table");
     game::init_table(conn).expect("Failed to initialize games table");
@@ -79,19 +90,23 @@ fn index() -> &'static str {
     "Hello, world!"
 }
 
-#[launch]
-fn rocket() -> _ {
-    let config = load_config();
-    let conn = Connection::open("tcg.db").expect("Failed to open database");
-    init_db(&conn);
-
+pub fn build_rocket(db_conn: DbConn, config: Config) -> rocket::Rocket<rocket::Build> {
     rocket::build()
         .manage(config)
-        .manage(DbConn(Mutex::new(conn)))
+        .manage(db_conn)
         .mount("/", routes![index])
         .mount("/users", user::routes::routes())
         .mount("/sessions", session::routes::routes())
         .mount("/games", game::routes::routes())
         .mount("/games", set::routes::routes())
         .mount("/games", card::routes::routes())
+}
+
+#[launch]
+fn rocket() -> _ {
+    let config = load_config();
+    let conn = Connection::open("tcg.db").expect("Failed to open database");
+    init_db(&conn);
+
+    build_rocket(DbConn(Mutex::new(conn)), config)
 }
