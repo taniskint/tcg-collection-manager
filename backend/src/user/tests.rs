@@ -10,7 +10,7 @@ use crate::test_helpers::create_test_client;
 
 fn create_user(client: &Client, username: &str, email: &str, password: &str) -> Value {
     let response = client
-        .post("/users")
+        .post("/api/users")
         .header(ContentType::JSON)
         .body(
             json!({
@@ -27,7 +27,7 @@ fn create_user(client: &Client, username: &str, email: &str, password: &str) -> 
 }
 
 // ============================================================================
-// POST /users (Create User)
+// POST /api/users (Create User)
 // ============================================================================
 
 #[test]
@@ -35,7 +35,7 @@ fn test_create_user_success() {
     let client = create_test_client();
 
     let response = client
-        .post("/users")
+        .post("/api/users")
         .header(ContentType::JSON)
         .body(
             json!({
@@ -63,7 +63,7 @@ fn test_create_user_duplicate_username() {
 
     // Try to create user with same username
     let response = client
-        .post("/users")
+        .post("/api/users")
         .header(ContentType::JSON)
         .body(
             json!({
@@ -90,7 +90,7 @@ fn test_create_user_duplicate_email() {
 
     // Try to create user with same email
     let response = client
-        .post("/users")
+        .post("/api/users")
         .header(ContentType::JSON)
         .body(
             json!({
@@ -114,7 +114,7 @@ fn test_create_user_no_auth_required() {
     let client = create_test_client();
 
     let response = client
-        .post("/users")
+        .post("/api/users")
         .header(ContentType::JSON)
         .body(
             json!({
@@ -148,7 +148,7 @@ fn test_create_user_response_only_contains_id() {
     let client = create_test_client();
 
     let response = client
-        .post("/users")
+        .post("/api/users")
         .header(ContentType::JSON)
         .body(
             json!({

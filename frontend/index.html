@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TCG Collection Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <!-- LOGGED OUT VIEW -->
+    <div id="logged-out-view" hidden>
+        <nav>
+            <div class="nav-header">
+                <a href="index.html"><p>TCG Collection Manager</p></a>
+                <div class="auth-buttons">
+                    <a href="login.html" class="btn btn-secondary">Log In</a>
+                    <a href="signup.html" class="btn btn-primary">Sign Up</a>
+                </div>
+            </div>
+        </nav>
+
+        <main class="landing">
+            <section class="hero">
+                <h1>Manage Your Card Collections</h1>
+                <p class="tagline">Track collections, build decks, and open booster packs for Pokemon, Magic: The Gathering, and more.</p>
+                <a href="signup.html" class="btn btn-primary btn-large">Get Started</a>
+            </section>
+
+            <section class="features">
+                <div class="feature">
+                    <div class="feature-icon">&#128451;</div>
+                    <h3>Track Collections</h3>
+                    <p>Organize your cards across multiple games and sets. Keep a digital record of your physical or virtual collection.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">&#127183;</div>
+                    <h3>Build Decks</h3>
+                    <p>Construct decks from your collection. Experiment with different builds before committing to physical cards.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">&#127873;</div>
+                    <h3>Open Boosters</h3>
+                    <p>Simulate opening booster packs to add cards to your collection. Experience the thrill without the cost.</p>
+                </div>
+            </section>
+
+            <section class="supported-games">
+                <h2>Supported Games</h2>
+                <div id="game-logos" class="game-logos">
+                    <!-- Populated dynamically from API -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- LOGGED IN VIEW (Dashboard) -->
+    <div id="logged-in-view" hidden>
+        <nav>
+            <div class="nav-header">
+                <a href="index.html"><p>TCG Collection Manager</p></a>
+                <div id="show-links" class="show-links">+</div>
+            </div>
+            <ul hidden id="nav-links" class="nav-links">
+                <li><a href="games.html"><p>Games</p></a></li>
+                <li><a href="collections.html"><p>Collections</p></a></li>
+                <li><a href="decks.html"><p>Decks</p></a></li>
+                <li><a href="account.html"><p>Account</p></a></li>
+            </ul>
+        </nav>
+
+        <main class="dashboard">
+            <section class="welcome-section">
+                <h1>Welcome back!</h1>
+                <p>Here's an overview of your collection activity.</p>
+            </section>
+
+            <section class="quick-actions">
+                <h2>Quick Actions</h2>
+                <div class="action-buttons">
+                    <a href="games.html" class="action-card">
+                        <div class="action-icon">&#127183;</div>
+                        <p>Browse Games</p>
+                    </a>
+                    <a href="collections.html" class="action-card">
+                        <div class="action-icon">&#128451;</div>
+                        <p>My Collections</p>
+                    </a>
+                    <a href="decks.html" class="action-card">
+                        <div class="action-icon">&#127156;</div>
+                        <p>My Decks</p>
+                    </a>
+                    <a href="boosters.html" class="action-card">
+                        <div class="action-icon">&#127873;</div>
+                        <p>Open Booster</p>
+                    </a>
+                </div>
+            </section>
+
+            <section class="recent-collections">
+                <h2>Your Collections</h2>
+                <div id="collections-list" class="collection-list">
+                    <div class="empty-state">
+                        <p>You don't have any collections yet.</p>
+                        <a href="collections.html" class="btn btn-primary">Create Collection</a>
+                    </div>
+                </div>
+            </section>
+
+            <section class="recent-decks">
+                <h2>Recent Decks</h2>
+                <div id="decks-list" class="deck-list">
+                    <div class="empty-state">
+                        <p>You don't have any decks yet.</p>
+                        <a href="decks.html" class="btn btn-primary">Create Deck</a>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script type="module" src="dist/index.js"></script>
+</body>
+</html>

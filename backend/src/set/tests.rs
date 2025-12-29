@@ -10,7 +10,7 @@ use crate::test_helpers::{admin_auth_header, create_test_client};
 
 fn create_game(client: &Client, name: &str) -> i64 {
     let response = client
-        .post("/games")
+        .post("/api/games")
         .header(ContentType::JSON)
         .header(Header::new("Authorization", admin_auth_header()))
         .body(json!({ "name": name }).to_string())
@@ -28,7 +28,7 @@ fn create_set(client: &Client, game_id: i64, name: &str, image_url: Option<&str>
     };
 
     let response = client
-        .post(format!("/games/{}/sets", game_id))
+        .post(format!("/api/games/{}/sets", game_id))
         .header(ContentType::JSON)
         .header(Header::new("Authorization", admin_auth_header()))
         .body(body.to_string())
@@ -39,7 +39,7 @@ fn create_set(client: &Client, game_id: i64, name: &str, image_url: Option<&str>
 }
 
 // ============================================================================
-// POST /games/<game_id>/sets (Create Set)
+// POST /api/games/<game_id>/sets (Create Set)
 // ============================================================================
 
 #[test]
@@ -48,7 +48,7 @@ fn test_create_set_success() {
     let game_id = create_game(&client, "Pokemon TCG");
 
     let response = client
-        .post(format!("/games/{}/sets", game_id))
+        .post(format!("/api/games/{}/sets", game_id))
         .header(ContentType::JSON)
         .header(Header::new("Authorization", admin_auth_header()))
         .body(json!({ "name": "Shrouded Fable" }).to_string())
@@ -67,7 +67,7 @@ fn test_create_set_with_image_url() {
     let game_id = create_game(&client, "Pokemon TCG");
 
     let response = client
-        .post(format!("/games/{}/sets", game_id))
+        .post(format!("/api/games/{}/sets", game_id))
         .header(ContentType::JSON)
         .header(Header::new("Authorization", admin_auth_header()))
         .body(
@@ -86,7 +86,7 @@ fn test_create_set_with_image_url() {
 
     // Verify the set was created with the image URL
     let get_response = client
-        .get(format!("/games/{}/sets/{}", game_id, set_id))
+        .get(format!("/api/games/{}/sets/{}", game_id, set_id))
         .dispatch();
     let set: Value = serde_json::from_str(&get_response.into_string().unwrap()).unwrap();
     assert_eq!(set["image_url"], "https://example.com/shrouded-fable.png");
@@ -97,7 +97,7 @@ fn test_create_set_game_not_found() {
     let client = create_test_client();
 
     let response = client
-        .post("/games/99999/sets")
+        .post("/api/games/99999/sets")
         .header(ContentType::JSON)
         .header(Header::new("Authorization", admin_auth_header()))
         .body(json!({ "name": "Shrouded Fable" }).to_string())
@@ -119,7 +119,7 @@ fn test_create_set_duplicate_name_same_game() {
 
     // Try to create duplicate
     let response = client
-        .post(format!("/games/{}/sets", game_id))
+        .post(format!("/api/games/{}/sets", game_id))
         .header(ContentType::JSON)
         .header(Header::new("Authorization", admin_auth_header()))
         .body(json!({ "name": "Shrouded Fable" }).to_string())
@@ -142,7 +142,7 @@ fn test_create_set_same_name_different_games() {
 
     // Same name in game 2 should work
     let response = client
-        .post(format!("/games/{}/sets", game2_id))
+        .post(format!("/api/games/{}/sets", game2_id))
         .header(ContentType::JSON)
         .header(Header::new("Authorization", admin_auth_header()))
         .body(json!({ "name": "Base Set" }).to_string())
@@ -157,7 +157,7 @@ fn test_create_set_without_auth() {
     let game_id = create_game(&client, "Pokemon TCG");
 
     let response = client
-        .post(format!("/games/{}/sets", game_id))
+        .post(format!("/api/games/{}/sets", game_id))
         .header(ContentType::JSON)
         .body(json!({ "name": "Shrouded Fable" }).to_string())
         .dispatch();
@@ -166,7 +166,7 @@ fn test_create_set_without_auth() {
 }
 
 // ============================================================================
-// GET /games/<game_id>/sets/<set_id> (Get Single Set)
+// GET /api/games/<game_id>/sets/<set_id> (Get Single Set)
 // ============================================================================
 
 #[test]
@@ -177,7 +177,7 @@ fn test_get_set_success() {
     let set_id = create_response["id"].as_i64().unwrap();
 
     let response = client
-        .get(format!("/games/{}/sets/{}", game_id, set_id))
+        .get(format!("/api/games/{}/sets/{}", game_id, set_id))
         .dispatch();
 
     assert_eq!(response.status(), Status::Ok);
@@ -194,7 +194,7 @@ fn test_get_set_not_found() {
     let game_id = create_game(&client, "Pokemon TCG");
 
     let response = client
-        .get(format!("/games/{}/sets/99999", game_id))
+        .get(format!("/api/games/{}/sets/99999", game_id))
         .dispatch();
 
     assert_eq!(response.status(), Status::NotFound);
@@ -212,14 +212,14 @@ fn test_get_set_no_auth_required() {
 
     // No auth header - should still work
     let response = client
-        .get(format!("/games/{}/sets/{}", game_id, set_id))
+        .get(format!("/api/games/{}/sets/{}", game_id, set_id))
         .dispatch();
 
     assert_eq!(response.status(), Status::Ok);
 }
 
 // ============================================================================
-// GET /games/<game_id>/sets (List Sets)
+// GET /api/games/<game_id>/sets (List Sets)
 // ============================================================================
 
 #[test]
@@ -227,7 +227,7 @@ fn test_list_sets_empty() {
     let client = create_test_client();
     let game_id = create_game(&client, "Pokemon TCG");
 
-    let response = client.get(format!("/games/{}/sets", game_id)).dispatch();
+    let response = client.get(format!("/api/games/{}/sets", game_id)).dispatch();
 
     assert_eq!(response.status(), Status::Ok);
 
@@ -244,7 +244,7 @@ fn test_list_sets_multiple() {
     create_set(&client, game_id, "Surging Sparks", None);
     create_set(&client, game_id, "Prismatic Evolutions", None);
 
-    let response = client.get(format!("/games/{}/sets", game_id)).dispatch();
+    let response = client.get(format!("/api/games/{}/sets", game_id)).dispatch();
 
     assert_eq!(response.status(), Status::Ok);
 
@@ -269,7 +269,7 @@ fn test_list_sets_only_for_specified_game() {
     create_set(&client, game2_id, "Innistrad", None);
 
     // List sets for game 1
-    let response = client.get(format!("/games/{}/sets", game1_id)).dispatch();
+    let response = client.get(format!("/api/games/{}/sets", game1_id)).dispatch();
     let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
     let sets = body.as_array().unwrap();
 
@@ -287,7 +287,7 @@ fn test_game_set_count_updates() {
     let game_id = create_game(&client, "Pokemon TCG");
 
     // Initially 0 sets
-    let response = client.get(format!("/games/{}", game_id)).dispatch();
+    let response = client.get(format!("/api/games/{}", game_id)).dispatch();
     let game: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
     assert_eq!(game["set_count"], 0);
 
@@ -296,7 +296,7 @@ fn test_game_set_count_updates() {
     create_set(&client, game_id, "Surging Sparks", None);
 
     // Now 2 sets
-    let response = client.get(format!("/games/{}", game_id)).dispatch();
+    let response = client.get(format!("/api/games/{}", game_id)).dispatch();
     let game: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
     assert_eq!(game["set_count"], 2);
 }

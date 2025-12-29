@@ -10,7 +10,7 @@ use crate::test_helpers::create_test_client;
 
 fn create_user(client: &Client, username: &str, email: &str, password: &str) {
     let response = client
-        .post("/users")
+        .post("/api/users")
         .header(ContentType::JSON)
         .body(
             json!({
@@ -27,7 +27,7 @@ fn create_user(client: &Client, username: &str, email: &str, password: &str) {
 
 fn login<'a>(client: &'a Client, email_or_username: &str, password: &str) -> rocket::local::blocking::LocalResponse<'a> {
     client
-        .post("/sessions")
+        .post("/api/sessions")
         .header(ContentType::JSON)
         .body(
             json!({
@@ -40,7 +40,7 @@ fn login<'a>(client: &'a Client, email_or_username: &str, password: &str) -> roc
 }
 
 // ============================================================================
-// POST /sessions (Login)
+// POST /api/sessions (Login)
 // ============================================================================
 
 #[test]
@@ -138,7 +138,7 @@ fn test_login_multiple_sessions() {
 }
 
 // ============================================================================
-// DELETE /sessions/<session_id> (Logout)
+// DELETE /api/sessions/<session_id> (Logout)
 // ============================================================================
 
 #[test]
@@ -156,7 +156,7 @@ fn test_logout_success() {
         .to_string();
 
     // Logout
-    let response = client.delete(format!("/sessions/{}", session_id)).dispatch();
+    let response = client.delete(format!("/api/sessions/{}", session_id)).dispatch();
 
     assert_eq!(response.status(), Status::Ok);
 }
@@ -166,7 +166,7 @@ fn test_logout_invalid_session() {
     let client = create_test_client();
 
     let response = client
-        .delete("/sessions/nonexistent-session-id")
+        .delete("/api/sessions/nonexistent-session-id")
         .dispatch();
 
     assert_eq!(response.status(), Status::NotFound);
@@ -187,11 +187,11 @@ fn test_logout_twice() {
         .to_string();
 
     // First logout - success
-    let response1 = client.delete(format!("/sessions/{}", session_id)).dispatch();
+    let response1 = client.delete(format!("/api/sessions/{}", session_id)).dispatch();
     assert_eq!(response1.status(), Status::Ok);
 
     // Second logout - session already deleted
-    let response2 = client.delete(format!("/sessions/{}", session_id)).dispatch();
+    let response2 = client.delete(format!("/api/sessions/{}", session_id)).dispatch();
     assert_eq!(response2.status(), Status::NotFound);
 }
 
@@ -218,10 +218,10 @@ fn test_logout_one_session_keeps_others() {
         .to_string();
 
     // Logout session 1
-    let logout1 = client.delete(format!("/sessions/{}", session1)).dispatch();
+    let logout1 = client.delete(format!("/api/sessions/{}", session1)).dispatch();
     assert_eq!(logout1.status(), Status::Ok);
 
     // Session 2 should still be valid (can be logged out)
-    let logout2 = client.delete(format!("/sessions/{}", session2)).dispatch();
+    let logout2 = client.delete(format!("/api/sessions/{}", session2)).dispatch();
     assert_eq!(logout2.status(), Status::Ok);
 }

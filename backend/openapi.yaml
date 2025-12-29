@@ -248,7 +248,7 @@ paths:
                 type: string
                 example: "Hello, world!"
 
-  /users:
+  /api/users:
     post:
       summary: Create a new user
       description: Register a new user account with username, email, and password
@@ -288,7 +288,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /sessions:
+  /api/sessions:
     post:
       summary: Login (create session)
       description: Authenticate with username/email and password. On success, sets a session_id cookie.
@@ -324,7 +324,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /sessions/{session_id}:
+  /api/sessions/{session_id}:
     delete:
       summary: Logout (delete session)
       description: Delete a session by ID. Also removes the session_id cookie.
@@ -345,7 +345,7 @@ paths:
         '404':
           description: Session not found
 
-  /games:
+  /api/games:
     get:
       summary: List all games
       description: Get a list of all trading card games
@@ -406,7 +406,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /games/{game_id}:
+  /api/games/{game_id}:
     get:
       summary: Get a game by ID
       description: Get details of a specific trading card game
@@ -444,7 +444,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /games/{game_id}/sets:
+  /api/games/{game_id}/sets:
     get:
       summary: List sets for a game
       description: Get all sets belonging to a specific game
@@ -531,7 +531,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /games/{game_id}/sets/{set_id}:
+  /api/games/{game_id}/sets/{set_id}:
     get:
       summary: Get a set by ID
       description: Get details of a specific set
@@ -577,7 +577,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /games/{game_id}/sets/{set_id}/cards:
+  /api/games/{game_id}/sets/{set_id}/cards:
     get:
       summary: List cards in a set
       description: Get all cards belonging to a specific set
@@ -686,7 +686,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /games/{game_id}/sets/{set_id}/cards/{card_id}:
+  /api/games/{game_id}/sets/{set_id}/cards/{card_id}:
     get:
       summary: Get a card by ID
       description: Get details of a specific card

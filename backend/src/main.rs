@@ -13,6 +13,7 @@ pub mod test_helpers;
 use std::fs;
 use std::sync::Mutex;
 
+use rocket::fs::FileServer;
 use rocket::http::Status;
 use rocket::request::{FromRequest, Outcome, Request};
 use rusqlite::Connection;
@@ -85,21 +86,16 @@ fn load_config() -> Config {
     toml::from_str(&content).expect("Failed to parse config.toml")
 }
 
-#[get("/")]
-fn index() -> &'static str {
-    "Hello, world!"
-}
-
 pub fn build_rocket(db_conn: DbConn, config: Config) -> rocket::Rocket<rocket::Build> {
     rocket::build()
         .manage(config)
         .manage(db_conn)
-        .mount("/", routes![index])
-        .mount("/users", user::routes::routes())
-        .mount("/sessions", session::routes::routes())
-        .mount("/games", game::routes::routes())
-        .mount("/games", set::routes::routes())
-        .mount("/games", card::routes::routes())
+        .mount("/", FileServer::from("../frontend"))
+        .mount("/api/users", user::routes::routes())
+        .mount("/api/sessions", session::routes::routes())
+        .mount("/api/games", game::routes::routes())
+        .mount("/api/games", set::routes::routes())
+        .mount("/api/games", card::routes::routes())
 }
 
 #[launch]

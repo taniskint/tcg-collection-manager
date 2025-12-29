@@ -15,7 +15,7 @@ fn create_game(client: &Client, name: &str, image_url: Option<&str>) -> Value {
     };
 
     let response = client
-        .post("/games")
+        .post("/api/games")
         .header(ContentType::JSON)
         .header(Header::new("Authorization", admin_auth_header()))
         .body(body.to_string())
@@ -26,7 +26,7 @@ fn create_game(client: &Client, name: &str, image_url: Option<&str>) -> Value {
 }
 
 // ============================================================================
-// POST /games (Create Game)
+// POST /api/games (Create Game)
 // ============================================================================
 
 #[test]
@@ -34,7 +34,7 @@ fn test_create_game_success() {
     let client = create_test_client();
 
     let response = client
-        .post("/games")
+        .post("/api/games")
         .header(ContentType::JSON)
         .header(Header::new("Authorization", admin_auth_header()))
         .body(json!({ "name": "Pokemon TCG" }).to_string())
@@ -52,7 +52,7 @@ fn test_create_game_with_image_url() {
     let client = create_test_client();
 
     let response = client
-        .post("/games")
+        .post("/api/games")
         .header(ContentType::JSON)
         .header(Header::new("Authorization", admin_auth_header()))
         .body(
@@ -70,7 +70,7 @@ fn test_create_game_with_image_url() {
     let game_id = body["id"].as_i64().unwrap();
 
     // Verify the game was created with the image URL
-    let get_response = client.get(format!("/games/{}", game_id)).dispatch();
+    let get_response = client.get(format!("/api/games/{}", game_id)).dispatch();
     let game: Value = serde_json::from_str(&get_response.into_string().unwrap()).unwrap();
     assert_eq!(game["image_url"], "https://example.com/mtg.png");
 }
@@ -84,7 +84,7 @@ fn test_create_game_duplicate_name() {
 
     // Try to create duplicate
     let response = client
-        .post("/games")
+        .post("/api/games")
         .header(ContentType::JSON)
         .header(Header::new("Authorization", admin_auth_header()))
         .body(json!({ "name": "Pokemon TCG" }).to_string())
@@ -105,7 +105,7 @@ fn test_create_game_without_auth() {
     let client = create_test_client();
 
     let response = client
-        .post("/games")
+        .post("/api/games")
         .header(ContentType::JSON)
         .body(json!({ "name": "Pokemon TCG" }).to_string())
         .dispatch();
@@ -118,7 +118,7 @@ fn test_create_game_with_invalid_auth() {
     let client = create_test_client();
 
     let response = client
-        .post("/games")
+        .post("/api/games")
         .header(ContentType::JSON)
         .header(Header::new("Authorization", "Bearer wrong-key"))
         .body(json!({ "name": "Pokemon TCG" }).to_string())
@@ -133,7 +133,7 @@ fn test_create_game_with_malformed_auth_header() {
 
     // Missing "Bearer " prefix
     let response = client
-        .post("/games")
+        .post("/api/games")
         .header(ContentType::JSON)
         .header(Header::new("Authorization", TEST_ADMIN_KEY))
         .body(json!({ "name": "Pokemon TCG" }).to_string())
@@ -143,7 +143,7 @@ fn test_create_game_with_malformed_auth_header() {
 }
 
 // ============================================================================
-// GET /games/<id> (Get Single Game)
+// GET /api/games/<id> (Get Single Game)
 // ============================================================================
 
 #[test]
@@ -155,7 +155,7 @@ fn test_get_game_success() {
     let game_id = create_response["id"].as_i64().unwrap();
 
     // Get the game
-    let response = client.get(format!("/games/{}", game_id)).dispatch();
+    let response = client.get(format!("/api/games/{}", game_id)).dispatch();
 
     assert_eq!(response.status(), Status::Ok);
 
@@ -170,7 +170,7 @@ fn test_get_game_success() {
 fn test_get_game_not_found() {
     let client = create_test_client();
 
-    let response = client.get("/games/99999").dispatch();
+    let response = client.get("/api/games/99999").dispatch();
 
     assert_eq!(response.status(), Status::NotFound);
 
@@ -187,20 +187,20 @@ fn test_get_game_no_auth_required() {
     let game_id = create_response["id"].as_i64().unwrap();
 
     // No auth header - should still work
-    let response = client.get(format!("/games/{}", game_id)).dispatch();
+    let response = client.get(format!("/api/games/{}", game_id)).dispatch();
 
     assert_eq!(response.status(), Status::Ok);
 }
 
 // ============================================================================
-// GET /games (List Games)
+// GET /api/games (List Games)
 // ============================================================================
 
 #[test]
 fn test_list_games_empty() {
     let client = create_test_client();
 
-    let response = client.get("/games").dispatch();
+    let response = client.get("/api/games").dispatch();
 
     assert_eq!(response.status(), Status::Ok);
 
@@ -217,7 +217,7 @@ fn test_list_games_multiple() {
     create_game(&client, "Magic: The Gathering", None);
     create_game(&client, "Yu-Gi-Oh!", None);
 
-    let response = client.get("/games").dispatch();
+    let response = client.get("/api/games").dispatch();
 
     assert_eq!(response.status(), Status::Ok);
 
@@ -240,7 +240,7 @@ fn test_list_games_no_auth_required() {
     create_game(&client, "Pokemon TCG", None);
 
     // No auth header - should still work
-    let response = client.get("/games").dispatch();
+    let response = client.get("/api/games").dispatch();
 
     assert_eq!(response.status(), Status::Ok);
 
@@ -262,7 +262,7 @@ fn test_database_isolation() {
     create_game(&client1, "Pokemon TCG", None);
 
     // client2 should not see it
-    let response = client2.get("/games").dispatch();
+    let response = client2.get("/api/games").dispatch();
     let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
 
     assert!(body.as_array().unwrap().is_empty());
