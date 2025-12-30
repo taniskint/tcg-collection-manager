@@ -82,17 +82,22 @@ nav {
 
 .nav-links {
     list-style-type: none;
-    padding-top: 4px;
-    padding-bottom: 4px;
-}
-
-nav li {
-    padding-top: 4px;
-    padding-bottom: 4px;
 }
 
 nav li:hover {
     background-color: var(--bg-elevated);
+}
+
+nav li a,
+nav li button {
+    display: block;
+    width: 100%;
+    padding: 8px 0;
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: inherit;
+    cursor: pointer;
 }
 
 main {

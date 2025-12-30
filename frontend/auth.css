@@ -1,0 +1,182 @@
+/* Auth page layout */
+.auth-page {
+    min-height: calc(100vh - 64px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px 16px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 400px;
+    padding: 32px;
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.auth-card h1 {
+    color: var(--text-emphasis);
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.auth-subtitle {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+/* Form styles */
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.form-group label {
+    font-weight: 500;
+    color: var(--text-emphasis);
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"] {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 1rem;
+    background-color: var(--bg-primary);
+    transition: border-color 0.1s linear, box-shadow 0.1s linear;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group input[type="password"]:focus {
+    outline: none;
+    border-color: var(--text-emphasis);
+    box-shadow: 0 0 4px var(--border);
+}
+
+.form-group input::placeholder {
+    color: var(--text-primary);
+    opacity: 0.7;
+}
+
+.input-hint {
+    font-size: 0.85rem;
+}
+
+/* Error message styling */
+.error-message {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    padding: 12px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+    display: none;
+}
+
+.error-message.visible {
+    display: block;
+}
+
+@media (prefers-color-scheme: dark) {
+    .error-message {
+        background-color: #450a0a;
+        border-color: #7f1d1d;
+        color: #fca5a5;
+    }
+}
+
+/* Checkbox styling */
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+.checkbox-label input[type="checkbox"] {
+    margin-top: 3px;
+    cursor: pointer;
+}
+
+.checkbox-label a {
+    color: var(--text-emphasis);
+    text-decoration: underline;
+}
+
+.checkbox-label a:hover {
+    text-decoration: none;
+}
+
+/* Form row for inline elements */
+.form-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.forgot-link {
+    font-size: 0.9rem;
+    color: var(--text-emphasis);
+    text-decoration: underline;
+}
+
+.forgot-link:hover {
+    text-decoration: none;
+}
+
+/* Button full width variant */
+.btn-full {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 1rem;
+    margin-top: 8px;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Auth footer */
+.auth-footer {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--bg-recessed);
+    text-align: center;
+}
+
+.auth-footer a {
+    color: var(--text-emphasis);
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+.auth-footer a:hover {
+    text-decoration: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 24px 16px;
+    }
+
+    .form-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}

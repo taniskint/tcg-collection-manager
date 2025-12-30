@@ -51,6 +51,32 @@ pub fn delete(conn: &Connection, session_id: &str) -> bool {
     rows_affected > 0
 }
 
+pub struct SessionUser {
+    pub id: i64,
+    pub username: String,
+    pub email: String,
+}
+
+pub fn get_user_by_session(conn: &Connection, session_id: &str) -> Option<SessionUser> {
+    let now = chrono::Utc::now().to_rfc3339();
+
+    conn.query_row(
+        "SELECT u.id, u.username, u.email
+         FROM sessions s
+         JOIN users u ON s.user_id = u.id
+         WHERE s.id = ?1 AND s.expires_at > ?2",
+        params![session_id, now],
+        |row| {
+            Ok(SessionUser {
+                id: row.get(0)?,
+                username: row.get(1)?,
+                email: row.get(2)?,
+            })
+        },
+    )
+    .ok()
+}
+
 pub fn init_table(conn: &Connection) -> Result<(), SqliteError> {
     conn.execute(
         "CREATE TABLE IF NOT EXISTS sessions (

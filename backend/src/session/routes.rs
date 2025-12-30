@@ -1,7 +1,7 @@
 use rocket::http::{Cookie, CookieJar, Status};
 use rocket::serde::json::Json;
 use rocket::State;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{DbConn, ErrorResponse};
 
@@ -9,6 +9,13 @@ use crate::{DbConn, ErrorResponse};
 pub struct LoginRequest {
     email_or_username: String,
     password: String,
+}
+
+#[derive(Serialize)]
+pub struct SessionUserResponse {
+    id: i64,
+    username: String,
+    email: String,
 }
 
 #[post("/", format = "json", data = "<req>")]
@@ -40,6 +47,24 @@ pub fn create(
     Ok(Status::Ok)
 }
 
+#[get("/<session_id>")]
+pub fn get(
+    db: &State<DbConn>,
+    session_id: &str,
+) -> Result<Json<SessionUserResponse>, (Status, Json<ErrorResponse>)> {
+    let conn = db.0.lock().unwrap();
+
+    super::get_user_by_session(&conn, session_id)
+        .map(|user| {
+            Json(SessionUserResponse {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+            })
+        })
+        .ok_or_else(|| (Status::NotFound, Json(ErrorResponse::new("Session not found"))))
+}
+
 #[delete("/<session_id>")]
 pub fn delete(db: &State<DbConn>, cookies: &CookieJar<'_>, session_id: &str) -> Status {
     let conn = db.0.lock().unwrap();
@@ -54,5 +79,5 @@ pub fn delete(db: &State<DbConn>, cookies: &CookieJar<'_>, session_id: &str) -> 
 }
 
 pub fn routes() -> Vec<rocket::Route> {
-    routes![create, delete]
+    routes![create, get, delete]
 }

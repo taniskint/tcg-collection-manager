@@ -225,3 +225,91 @@ fn test_logout_one_session_keeps_others() {
     let logout2 = client.delete(format!("/api/sessions/{}", session2)).dispatch();
     assert_eq!(logout2.status(), Status::Ok);
 }
+
+// ============================================================================
+// GET /api/sessions/<session_id> (Validate Session)
+// ============================================================================
+
+#[test]
+fn test_get_session_success() {
+    let client = create_test_client();
+    create_user(&client, "testuser", "test@example.com", "password123");
+
+    // Login first
+    let login_response = login(&client, "testuser", "password123");
+    let session_id = login_response
+        .cookies()
+        .get("session_id")
+        .unwrap()
+        .value()
+        .to_string();
+
+    // Get session
+    let response = client.get(format!("/api/sessions/{}", session_id)).dispatch();
+
+    assert_eq!(response.status(), Status::Ok);
+
+    let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
+    assert!(body["id"].as_i64().is_some());
+    assert_eq!(body["username"], "testuser");
+    assert_eq!(body["email"], "test@example.com");
+}
+
+#[test]
+fn test_get_session_not_found() {
+    let client = create_test_client();
+
+    let response = client
+        .get("/api/sessions/nonexistent-session-id")
+        .dispatch();
+
+    assert_eq!(response.status(), Status::NotFound);
+
+    let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
+    assert_eq!(body["error"], "Session not found");
+}
+
+#[test]
+fn test_get_session_after_logout() {
+    let client = create_test_client();
+    create_user(&client, "testuser", "test@example.com", "password123");
+
+    // Login
+    let login_response = login(&client, "testuser", "password123");
+    let session_id = login_response
+        .cookies()
+        .get("session_id")
+        .unwrap()
+        .value()
+        .to_string();
+
+    // Session should be valid
+    let response = client.get(format!("/api/sessions/{}", session_id)).dispatch();
+    assert_eq!(response.status(), Status::Ok);
+
+    // Logout
+    client.delete(format!("/api/sessions/{}", session_id)).dispatch();
+
+    // Session should no longer be valid
+    let response = client.get(format!("/api/sessions/{}", session_id)).dispatch();
+    assert_eq!(response.status(), Status::NotFound);
+}
+
+#[test]
+fn test_get_session_no_auth_required() {
+    // GET session endpoint should be accessible without special auth
+    let client = create_test_client();
+    create_user(&client, "testuser", "test@example.com", "password123");
+
+    let login_response = login(&client, "testuser", "password123");
+    let session_id = login_response
+        .cookies()
+        .get("session_id")
+        .unwrap()
+        .value()
+        .to_string();
+
+    // No special headers needed
+    let response = client.get(format!("/api/sessions/{}", session_id)).dispatch();
+    assert_eq!(response.status(), Status::Ok);
+}

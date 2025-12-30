@@ -238,6 +238,10 @@
     color: var(--text-primary);
 }
 
+.empty-state p {
+    margin-bottom: 16px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 600px) {
     .hero h1 {
