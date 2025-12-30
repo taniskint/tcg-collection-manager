@@ -1,0 +1,84 @@
+/* Page header */
+.page-header {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px 16px 16px;
+}
+
+.page-header h1 {
+    color: var(--text-emphasis);
+    margin-bottom: 8px;
+}
+
+/* Games grid */
+.games-grid {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.game-card {
+    display: flex;
+    flex-direction: column;
+    width: 200px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: var(--bg-elevated);
+    transition: box-shadow 0.1s linear;
+}
+
+.game-card:hover {
+    box-shadow: 0 0 8px var(--border);
+}
+
+.game-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 120px;
+    margin-bottom: 12px;
+}
+
+.game-logo img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.game-info {
+    text-align: center;
+}
+
+.game-info h3 {
+    color: var(--text-emphasis);
+    margin-bottom: 4px;
+}
+
+.game-meta {
+    font-size: 0.9rem;
+}
+
+/* Loading and empty states */
+.games-loading,
+.games-empty {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 32px 16px;
+    text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .games-grid {
+        justify-content: center;
+    }
+
+    .game-card {
+        width: 100%;
+        max-width: 280px;
+    }
+}
