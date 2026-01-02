@@ -2,6 +2,7 @@
 extern crate rocket;
 
 mod card;
+mod collection;
 mod game;
 mod session;
 mod set;
@@ -73,12 +74,36 @@ impl<'r> FromRequest<'r> for AdminAuth {
     }
 }
 
+pub struct SessionAuth(pub session::SessionUser);
+
+#[rocket::async_trait]
+impl<'r> FromRequest<'r> for SessionAuth {
+    type Error = &'static str;
+
+    async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
+        let db = request.rocket().state::<DbConn>();
+        let session_cookie = request.cookies().get("session_id");
+
+        match (db, session_cookie) {
+            (Some(db), Some(cookie)) => {
+                let conn = db.0.lock().unwrap();
+                match session::get_user_by_session(&conn, cookie.value()) {
+                    Some(user) => Outcome::Success(SessionAuth(user)),
+                    None => Outcome::Error((Status::Unauthorized, "Invalid session")),
+                }
+            }
+            _ => Outcome::Error((Status::Unauthorized, "No session")),
+        }
+    }
+}
+
 pub fn init_db(conn: &Connection) {
     user::init_table(conn).expect("Failed to initialize users table");
     session::init_table(conn).expect("Failed to initialize sessions table");
     game::init_table(conn).expect("Failed to initialize games table");
     set::init_table(conn).expect("Failed to initialize sets table");
     card::init_table(conn).expect("Failed to initialize cards table");
+    collection::init_table(conn).expect("Failed to initialize collections table");
 }
 
 fn load_config() -> Config {
@@ -96,6 +121,7 @@ pub fn build_rocket(db_conn: DbConn, config: Config) -> rocket::Rocket<rocket::B
         .mount("/api/games", game::routes::routes())
         .mount("/api/games", set::routes::routes())
         .mount("/api/games", card::routes::routes())
+        .mount("/api/collections", collection::routes::routes())
 }
 
 #[launch]

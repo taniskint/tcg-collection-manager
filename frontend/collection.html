@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Collection - TCG Collection Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="collection.css">
+</head>
+<body>
+    <nav>
+        <div class="nav-header">
+            <a href="index.html"><p>TCG Collection Manager</p></a>
+            <div id="show-links" class="show-links">+</div>
+        </div>
+        <ul hidden id="nav-links" class="nav-links">
+            <li><a href="games.html"><p>Games</p></a></li>
+            <li><a href="collections.html"><p>Collections</p></a></li>
+            <li><a href="decks.html"><p>Decks</p></a></li>
+            <li><a href="account.html"><p>Account</p></a></li>
+            <li><button id="logout-btn">Log Out</button></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section id="page-header" class="page-header" hidden>
+            <div class="page-header-card">
+                <nav class="breadcrumb">
+                    <a href="collections.html">Collections</a>
+                    <span class="breadcrumb-separator">/</span>
+                    <span id="breadcrumb-collection" class="breadcrumb-current"></span>
+                </nav>
+                <div class="page-header-content">
+                    <img id="game-logo" src="" alt="" class="page-header-logo">
+                    <div class="page-header-text">
+                        <h1 id="collection-name"></h1>
+                        <p id="collection-game"></p>
+                        <p class="collection-meta"><span id="stat-cards">0</span> cards · Created <span id="stat-created"></span></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="cards-placeholder" class="cards-placeholder" hidden>
+            <p>Card management coming soon. You'll be able to add and organize cards in your collection here.</p>
+        </section>
+
+        <div id="collection-loading" class="collection-loading">
+            <p>Loading collection...</p>
+        </div>
+
+        <div id="collection-error" class="collection-error" hidden>
+            <p>Failed to load collection.</p>
+            <a href="collections.html" class="btn btn-secondary">Return to Collections</a>
+        </div>
+    </main>
+
+    <script type="module" src="dist/collection.js"></script>
+</body>
+</html>

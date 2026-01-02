@@ -12,6 +12,15 @@
         email: string;
     }
 
+    interface Collection {
+        id: number;
+        game_id: number;
+        name: string;
+        created_at: string;
+        game_name: string;
+        game_image_url: string | null;
+    }
+
     function getSessionId(): string | null {
         const cookies = document.cookie.split(";");
         for (const cookie of cookies) {
@@ -72,6 +81,42 @@
             .join("");
     }
 
+    async function loadCollections(): Promise<Collection[]> {
+        try {
+            const response = await fetch("/api/collections");
+            if (!response.ok) {
+                return [];
+            }
+            return await response.json();
+        } catch {
+            return [];
+        }
+    }
+
+    function renderCollectionsList(collections: Collection[]): void {
+        const container = document.getElementById("collections-list");
+        if (!container) return;
+
+        if (collections.length === 0) {
+            // Keep the existing empty state HTML
+            return;
+        }
+
+        container.innerHTML =
+            collections
+                .slice(0, 3) // Show only recent 3
+                .map(
+                    (c) => `
+                    <a href="collection.html?id=${c.id}" class="collection-preview">
+                        <span class="collection-preview-name">${c.name}</span>
+                        <span class="collection-preview-game">${c.game_name}</span>
+                    </a>
+                `
+                )
+                .join("") +
+            `<a href="collections.html" class="view-all-link">View All</a>`;
+    }
+
     function setupNavToggle(): void {
         const showLinksDiv = document.getElementById("show-links");
         const navLinksUL = document.getElementById("nav-links");
@@ -119,6 +164,10 @@
             loggedInView.hidden = false;
             setupNavToggle();
             setupLogout();
+
+            // Load and display user's collections
+            const collections = await loadCollections();
+            renderCollectionsList(collections);
         } else {
             loggedOutView.hidden = false;
             loggedInView.hidden = true;

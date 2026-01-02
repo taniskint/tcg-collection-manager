@@ -164,6 +164,42 @@
     gap: 12px;
 }
 
+.collection-preview {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: var(--bg-elevated);
+    transition: box-shadow 0.1s linear;
+}
+
+.collection-preview:hover {
+    box-shadow: 0 0 8px var(--border);
+}
+
+.collection-preview-name {
+    font-weight: 500;
+    color: var(--text-emphasis);
+}
+
+.collection-preview-game {
+    font-size: 0.85rem;
+}
+
+.view-all-link {
+    display: block;
+    text-align: center;
+    padding: 12px;
+    color: var(--text-primary);
+}
+
+.view-all-link:hover {
+    color: var(--text-emphasis);
+    text-decoration: underline;
+}
+
 .collection-card {
     display: flex;
     align-items: center;

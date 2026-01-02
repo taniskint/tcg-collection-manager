@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cards - TCG Collection Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="cards.css">
+</head>
+<body>
+    <nav>
+        <div class="nav-header">
+            <a href="index.html"><p>TCG Collection Manager</p></a>
+            <div id="show-links" class="show-links">+</div>
+        </div>
+        <ul hidden id="nav-links" class="nav-links">
+            <li><a href="games.html"><p>Games</p></a></li>
+            <li><a href="collections.html"><p>Collections</p></a></li>
+            <li><a href="decks.html"><p>Decks</p></a></li>
+            <li><a href="account.html"><p>Account</p></a></li>
+            <li><button id="logout-btn">Log Out</button></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section id="page-header" class="page-header" hidden>
+            <div class="page-header-card">
+                <nav class="breadcrumb">
+                    <a href="games.html">Games</a>
+                    <span class="breadcrumb-separator">/</span>
+                    <a id="breadcrumb-game" href="#"></a>
+                    <span class="breadcrumb-separator">/</span>
+                    <span id="breadcrumb-set" class="breadcrumb-current"></span>
+                </nav>
+                <div class="page-header-content">
+                    <img id="set-logo" src="" alt="" class="page-header-logo" hidden>
+                    <div class="page-header-text">
+                        <h1 id="set-name"></h1>
+                        <p id="card-count"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="cards-loading" class="cards-loading">
+            <p>Loading cards...</p>
+        </div>
+
+        <div id="cards-error" class="cards-error" hidden>
+            <p>Failed to load cards. <a href="games.html">Return to games</a></p>
+        </div>
+
+        <div id="cards-empty" class="cards-empty" hidden>
+            <p>No cards in this set yet.</p>
+        </div>
+
+        <section id="cards-grid" class="cards-grid" hidden>
+            <!-- Cards loaded dynamically -->
+        </section>
+    </main>
+
+    <script type="module" src="dist/cards.js"></script>
+</body>
+</html>

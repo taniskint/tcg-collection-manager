@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sets - TCG Collection Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="sets.css">
+</head>
+<body>
+    <nav>
+        <div class="nav-header">
+            <a href="index.html"><p>TCG Collection Manager</p></a>
+            <div id="show-links" class="show-links">+</div>
+        </div>
+        <ul hidden id="nav-links" class="nav-links">
+            <li><a href="games.html"><p>Games</p></a></li>
+            <li><a href="collections.html"><p>Collections</p></a></li>
+            <li><a href="decks.html"><p>Decks</p></a></li>
+            <li><a href="account.html"><p>Account</p></a></li>
+            <li><button id="logout-btn">Log Out</button></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section id="page-header" class="page-header" hidden>
+            <div class="page-header-card">
+                <nav class="breadcrumb">
+                    <a href="games.html">Games</a>
+                    <span class="breadcrumb-separator">/</span>
+                    <span id="breadcrumb-game" class="breadcrumb-current"></span>
+                </nav>
+                <div class="page-header-content">
+                    <img id="game-logo" src="" alt="" class="page-header-logo">
+                    <div class="page-header-text">
+                        <h1 id="game-name"></h1>
+                        <p>Select a set to view cards.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="sets-loading" class="sets-loading">
+            <p>Loading sets...</p>
+        </div>
+
+        <div id="sets-error" class="sets-error" hidden>
+            <p>Failed to load sets. <a href="games.html">Return to games</a></p>
+        </div>
+
+        <div id="sets-empty" class="sets-empty" hidden>
+            <p>No sets available for this game yet.</p>
+        </div>
+
+        <section id="sets-grid" class="sets-grid" hidden>
+            <!-- Sets loaded dynamically -->
+        </section>
+    </main>
+
+    <script type="module" src="dist/sets.js"></script>
+</body>
+</html>
