@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use rocket::http::Status;
 use rocket::serde::json::Json;
 use rocket::State;
@@ -35,6 +37,24 @@ pub struct CollectionDetail {
     game_name: String,
     game_image_url: Option<String>,
     card_count: i64,
+}
+
+#[derive(Serialize)]
+pub struct CollectionCardItem {
+    id: i64,
+    name: String,
+    collector_number: String,
+    image_url: Option<String>,
+    attributes: HashMap<String, String>,
+    set_id: i64,
+    set_name: String,
+    quantity: i64,
+}
+
+#[derive(Deserialize)]
+pub struct CardQuantityUpdateRequest {
+    card_id: i64,
+    quantity: i64,
 }
 
 #[post("/", format = "json", data = "<req>")]
@@ -113,10 +133,86 @@ pub fn get(
         created_at: collection.created_at,
         game_name: collection.game_name,
         game_image_url: collection.game_image_url,
-        card_count: 0, // Will be implemented when cards are added to collections
+        card_count: collection.card_count,
     }))
 }
 
+#[get("/<collection_id>/cards")]
+pub fn list_cards(
+    auth: SessionAuth,
+    db: &State<DbConn>,
+    collection_id: i64,
+) -> Result<Json<Vec<CollectionCardItem>>, (Status, Json<ErrorResponse>)> {
+    let conn = db.0.lock().unwrap();
+
+    let cards = super::list_collection_cards(&conn, collection_id, auth.0.id).map_err(|e| {
+        let (status, error) = match e {
+            super::GetCollectionError::NotFound => (Status::NotFound, "Collection not found"),
+            super::GetCollectionError::NotOwner => (Status::Forbidden, "Access denied"),
+            super::GetCollectionError::DatabaseError => {
+                (Status::InternalServerError, "Failed to list cards")
+            }
+        };
+        (status, Json(ErrorResponse::new(error)))
+    })?;
+
+    let items = cards
+        .into_iter()
+        .map(|c| CollectionCardItem {
+            id: c.id,
+            name: c.name,
+            collector_number: c.collector_number,
+            image_url: c.image_url,
+            attributes: c.attributes,
+            set_id: c.set_id,
+            set_name: c.set_name,
+            quantity: c.quantity,
+        })
+        .collect();
+
+    Ok(Json(items))
+}
+
+#[patch("/<collection_id>/cards", format = "json", data = "<req>")]
+pub fn update_cards(
+    auth: SessionAuth,
+    db: &State<DbConn>,
+    collection_id: i64,
+    req: Json<Vec<CardQuantityUpdateRequest>>,
+) -> Result<Status, (Status, Json<ErrorResponse>)> {
+    let conn = db.0.lock().unwrap();
+
+    let updates: Vec<super::CardQuantityUpdate> = req
+        .into_inner()
+        .into_iter()
+        .map(|r| super::CardQuantityUpdate {
+            card_id: r.card_id,
+            quantity: r.quantity,
+        })
+        .collect();
+
+    super::update_collection_cards(&conn, collection_id, auth.0.id, &updates).map_err(|e| {
+        let (status, error) = match e {
+            super::UpdateCollectionCardsError::CollectionNotFound => {
+                (Status::NotFound, "Collection not found")
+            }
+            super::UpdateCollectionCardsError::NotOwner => (Status::Forbidden, "Access denied"),
+            super::UpdateCollectionCardsError::CardNotFound => {
+                (Status::NotFound, "Card not found")
+            }
+            super::UpdateCollectionCardsError::GameMismatch => {
+                (Status::BadRequest, "Card does not belong to collection's game")
+            }
+            super::UpdateCollectionCardsError::DatabaseError => {
+                (Status::InternalServerError, "Failed to update cards")
+            }
+        };
+        (status, Json(ErrorResponse::new(error)))
+    })?;
+
+    Ok(Status::NoContent)
+}
+
 pub fn routes() -> Vec<rocket::Route> {
-    routes![create, list, get]
+    routes![create, list, get, list_cards, update_cards]
 }

@@ -37,12 +37,54 @@
                         <p id="collection-game"></p>
                         <p class="collection-meta"><span id="stat-cards">0</span> cards · Created <span id="stat-created"></span></p>
                     </div>
+                    <div class="page-header-actions">
+                        <button class="btn btn-primary" id="add-cards-btn">+ Add Cards</button>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section id="cards-placeholder" class="cards-placeholder" hidden>
-            <p>Card management coming soon. You'll be able to add and organize cards in your collection here.</p>
+        <section id="filters-section" class="filters-section" hidden>
+            <div class="search-bar">
+                <input type="text" id="card-search" placeholder="Search cards by name..." class="search-input">
+            </div>
+            <div class="filters-row" id="basic-filters">
+                <div class="filter-group">
+                    <label for="filter-set">Set</label>
+                    <select id="filter-set" class="filter-select">
+                        <option value="">All Sets</option>
+                    </select>
+                </div>
+                <div id="attribute-filters"></div>
+                <button class="btn btn-secondary filter-clear" id="clear-filters">Clear Filters</button>
+            </div>
+        </section>
+
+        <section id="sorting-section" class="sorting-section" hidden>
+            <div class="sorting-rows" id="sorting-rows">
+                <div class="sort-group" data-sort-level="0">
+                    <label>Sort by</label>
+                    <select class="filter-select sort-field">
+                        <option value="id">Default</option>
+                        <option value="name">Name</option>
+                        <option value="collector_number">Card Number</option>
+                        <option value="quantity">Quantity</option>
+                        <option value="set_name">Set</option>
+                    </select>
+                    <select class="filter-select order-select">
+                        <option value="asc">Asc</option>
+                        <option value="desc">Desc</option>
+                    </select>
+                    <button class="btn-icon sort-add" id="add-sort-level" title="Add sort level">+</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="cards-grid" class="cards-grid" hidden>
+        </section>
+
+        <section id="cards-empty" class="cards-empty" hidden>
+            <p>No cards in this collection yet. Click "Add Cards" to get started.</p>
         </section>
 
         <div id="collection-loading" class="collection-loading">
@@ -54,6 +96,30 @@
             <a href="collections.html" class="btn btn-secondary">Return to Collections</a>
         </div>
     </main>
+
+    <!-- Add Cards Modal -->
+    <div class="modal-overlay" id="add-cards-modal" hidden>
+        <div class="modal modal-large">
+            <div class="modal-header">
+                <h2>Add Cards to Collection</h2>
+                <button class="btn-icon modal-close" id="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="add-cards-search">
+                    <input type="text" id="add-card-search" placeholder="Search for a card to add..." class="search-input">
+                    <select id="add-card-set" class="filter-select">
+                        <option value="">All Sets</option>
+                    </select>
+                </div>
+                <div id="add-cards-results" class="add-cards-results">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="modal-cancel">Cancel</button>
+                <button class="btn btn-primary" id="modal-submit">Add Selected Cards</button>
+            </div>
+        </div>
+    </div>
 
     <script type="module" src="dist/collection.js"></script>
 </body>

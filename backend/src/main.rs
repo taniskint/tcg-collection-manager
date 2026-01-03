@@ -104,6 +104,8 @@ pub fn init_db(conn: &Connection) {
     set::init_table(conn).expect("Failed to initialize sets table");
     card::init_table(conn).expect("Failed to initialize cards table");
     collection::init_table(conn).expect("Failed to initialize collections table");
+    collection::init_collection_cards_table(conn)
+        .expect("Failed to initialize collection_cards table");
 }
 
 fn load_config() -> Config {
