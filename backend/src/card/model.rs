@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use rusqlite::{params, Connection, Error as SqliteError};
+use rusqlite::{Connection, Error as SqliteError, params};
 
 pub struct Card {
     pub id: i64,
@@ -87,7 +87,9 @@ pub fn get(conn: &Connection, set_id: i64, card_id: i64) -> Result<Option<Card>,
 }
 
 pub fn list(conn: &Connection, set_id: i64) -> Result<Vec<Card>, SqliteError> {
-    let mut stmt = conn.prepare("SELECT id, name, collector_number, image_url, attributes FROM cards WHERE set_id = ?1")?;
+    let mut stmt = conn.prepare(
+        "SELECT id, name, collector_number, image_url, attributes FROM cards WHERE set_id = ?1",
+    )?;
     let mut rows = stmt.query(params![set_id])?;
     let mut cards = Vec::new();
 

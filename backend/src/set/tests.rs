@@ -1,6 +1,6 @@
 use rocket::http::{ContentType, Header, Status};
 use rocket::local::blocking::Client;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use crate::test_helpers::{admin_auth_header, create_test_client};
 
@@ -173,7 +173,12 @@ fn test_create_set_without_auth() {
 fn test_get_set_success() {
     let client = create_test_client();
     let game_id = create_game(&client, "Pokemon TCG");
-    let create_response = create_set(&client, game_id, "Shrouded Fable", Some("https://example.com/sf.png"));
+    let create_response = create_set(
+        &client,
+        game_id,
+        "Shrouded Fable",
+        Some("https://example.com/sf.png"),
+    );
     let set_id = create_response["id"].as_i64().unwrap();
 
     let response = client
@@ -227,7 +232,9 @@ fn test_list_sets_empty() {
     let client = create_test_client();
     let game_id = create_game(&client, "Pokemon TCG");
 
-    let response = client.get(format!("/api/games/{}/sets", game_id)).dispatch();
+    let response = client
+        .get(format!("/api/games/{}/sets", game_id))
+        .dispatch();
 
     assert_eq!(response.status(), Status::Ok);
 
@@ -244,7 +251,9 @@ fn test_list_sets_multiple() {
     create_set(&client, game_id, "Surging Sparks", None);
     create_set(&client, game_id, "Prismatic Evolutions", None);
 
-    let response = client.get(format!("/api/games/{}/sets", game_id)).dispatch();
+    let response = client
+        .get(format!("/api/games/{}/sets", game_id))
+        .dispatch();
 
     assert_eq!(response.status(), Status::Ok);
 
@@ -269,7 +278,9 @@ fn test_list_sets_only_for_specified_game() {
     create_set(&client, game2_id, "Innistrad", None);
 
     // List sets for game 1
-    let response = client.get(format!("/api/games/{}/sets", game1_id)).dispatch();
+    let response = client
+        .get(format!("/api/games/{}/sets", game1_id))
+        .dispatch();
     let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
     let sets = body.as_array().unwrap();
 

@@ -1,6 +1,6 @@
 use rocket::http::{ContentType, Header, Status};
 use rocket::local::blocking::Client;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use crate::test_helpers::{admin_auth_header, create_test_client};
 
@@ -118,7 +118,10 @@ fn test_create_card_with_all_fields() {
 
     // Verify the card was created with all fields
     let response = client
-        .get(format!("/api/games/{}/sets/{}/cards/{}", game_id, set_id, card_id))
+        .get(format!(
+            "/api/games/{}/sets/{}/cards/{}",
+            game_id, set_id, card_id
+        ))
         .dispatch();
 
     assert_eq!(response.status(), Status::Ok);
@@ -176,7 +179,10 @@ fn test_create_card_empty_attributes() {
     let card_id = body["ids"][0].as_i64().unwrap();
 
     let response = client
-        .get(format!("/api/games/{}/sets/{}/cards/{}", game_id, set_id, card_id))
+        .get(format!(
+            "/api/games/{}/sets/{}/cards/{}",
+            game_id, set_id, card_id
+        ))
         .dispatch();
 
     let card: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
@@ -206,7 +212,10 @@ fn test_get_card_success() {
     let card_id = body["ids"][0].as_i64().unwrap();
 
     let response = client
-        .get(format!("/api/games/{}/sets/{}/cards/{}", game_id, set_id, card_id))
+        .get(format!(
+            "/api/games/{}/sets/{}/cards/{}",
+            game_id, set_id, card_id
+        ))
         .dispatch();
 
     assert_eq!(response.status(), Status::Ok);
@@ -226,7 +235,10 @@ fn test_get_card_not_found() {
     let set_id = create_set(&client, game_id, "Shrouded Fable");
 
     let response = client
-        .get(format!("/api/games/{}/sets/{}/cards/99999", game_id, set_id))
+        .get(format!(
+            "/api/games/{}/sets/{}/cards/99999",
+            game_id, set_id
+        ))
         .dispatch();
 
     assert_eq!(response.status(), Status::NotFound);
@@ -247,7 +259,10 @@ fn test_get_card_no_auth_required() {
 
     // No auth header - should still work
     let response = client
-        .get(format!("/api/games/{}/sets/{}/cards/{}", game_id, set_id, card_id))
+        .get(format!(
+            "/api/games/{}/sets/{}/cards/{}",
+            game_id, set_id, card_id
+        ))
         .dispatch();
 
     assert_eq!(response.status(), Status::Ok);
@@ -310,8 +325,18 @@ fn test_list_cards_only_for_specified_set() {
     let set1_id = create_set(&client, game_id, "Shrouded Fable");
     let set2_id = create_set(&client, game_id, "Surging Sparks");
 
-    create_cards(&client, game_id, set1_id, json!([{ "name": "Pikachu", "collector_number": "025" }]));
-    create_cards(&client, game_id, set2_id, json!([{ "name": "Charizard", "collector_number": "006" }]));
+    create_cards(
+        &client,
+        game_id,
+        set1_id,
+        json!([{ "name": "Pikachu", "collector_number": "025" }]),
+    );
+    create_cards(
+        &client,
+        game_id,
+        set2_id,
+        json!([{ "name": "Charizard", "collector_number": "006" }]),
+    );
 
     // List cards for set 1
     let response = client
@@ -347,7 +372,10 @@ fn test_card_attributes_preserved() {
     let card_id = body["ids"][0].as_i64().unwrap();
 
     let response = client
-        .get(format!("/api/games/{}/sets/{}/cards/{}", game_id, set_id, card_id))
+        .get(format!(
+            "/api/games/{}/sets/{}/cards/{}",
+            game_id, set_id, card_id
+        ))
         .dispatch();
 
     let card: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();

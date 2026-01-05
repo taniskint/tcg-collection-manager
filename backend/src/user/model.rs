@@ -1,5 +1,5 @@
-use bcrypt::{hash, DEFAULT_COST};
-use rusqlite::{params, Connection, Error as SqliteError};
+use bcrypt::{DEFAULT_COST, hash};
+use rusqlite::{Connection, Error as SqliteError, params};
 
 #[derive(Debug)]
 pub enum CreateUserError {

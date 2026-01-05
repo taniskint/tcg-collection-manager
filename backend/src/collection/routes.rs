@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
+use rocket::State;
 use rocket::http::Status;
 use rocket::serde::json::Json;
-use rocket::State;
 use serde::{Deserialize, Serialize};
 
 use crate::{DbConn, ErrorResponse, SessionAuth};
@@ -197,12 +197,11 @@ pub fn update_cards(
                 (Status::NotFound, "Collection not found")
             }
             super::UpdateCollectionCardsError::NotOwner => (Status::Forbidden, "Access denied"),
-            super::UpdateCollectionCardsError::CardNotFound => {
-                (Status::NotFound, "Card not found")
-            }
-            super::UpdateCollectionCardsError::GameMismatch => {
-                (Status::BadRequest, "Card does not belong to collection's game")
-            }
+            super::UpdateCollectionCardsError::CardNotFound => (Status::NotFound, "Card not found"),
+            super::UpdateCollectionCardsError::GameMismatch => (
+                Status::BadRequest,
+                "Card does not belong to collection's game",
+            ),
             super::UpdateCollectionCardsError::DatabaseError => {
                 (Status::InternalServerError, "Failed to update cards")
             }

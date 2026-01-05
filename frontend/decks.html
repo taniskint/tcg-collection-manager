@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Decks - TCG Collection Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="decks.css">
+</head>
+<body>
+    <nav>
+        <div class="nav-header">
+            <a href="index.html"><p>TCG Collection Manager</p></a>
+            <div id="show-links" class="show-links">+</div>
+        </div>
+        <ul hidden id="nav-links" class="nav-links">
+            <li><a href="games.html"><p>Games</p></a></li>
+            <li><a href="collections.html"><p>Collections</p></a></li>
+            <li><a href="decks.html"><p>Decks</p></a></li>
+            <li><a href="account.html"><p>Account</p></a></li>
+            <li><button id="logout-btn">Log Out</button></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section class="page-header">
+            <div class="page-header-row">
+                <div>
+                    <h1>My Decks</h1>
+                    <p>Manage your card decks across different collections.</p>
+                </div>
+                <button id="new-deck-btn" class="btn btn-primary" hidden>New Deck</button>
+            </div>
+        </section>
+
+        <div id="create-modal" class="modal" hidden>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Create Deck</h2>
+                    <button id="close-modal-btn" class="modal-close">&times;</button>
+                </div>
+                <form id="create-deck-form">
+                    <div class="form-group">
+                        <label for="collection-select">Collection</label>
+                        <select id="collection-select" required>
+                            <option value="">Select a collection...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="deck-name">Deck Name</label>
+                        <input type="text" id="deck-name" required placeholder="My Deck">
+                    </div>
+                    <div id="form-error" class="form-error" hidden></div>
+                    <div class="form-actions">
+                        <button type="button" id="cancel-btn" class="btn btn-secondary">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="decks-loading" class="decks-loading">
+            <p>Loading decks...</p>
+        </div>
+
+        <div id="decks-error" class="decks-error" hidden>
+            <p>You must be logged in to view decks.</p>
+            <a href="login.html" class="btn btn-primary">Log In</a>
+        </div>
+
+        <div id="decks-empty" class="decks-empty" hidden>
+            <p>You don't have any decks yet.</p>
+        </div>
+
+        <div id="decks-container" class="decks-container" hidden>
+            <!-- Decks grouped by collection loaded dynamically -->
+        </div>
+    </main>
+
+    <script type="module" src="dist/decks.js"></script>
+</body>
+</html>

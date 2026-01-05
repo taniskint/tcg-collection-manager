@@ -1,6 +1,6 @@
 use rocket::http::{ContentType, Cookie, Header, Status};
 use rocket::local::blocking::Client;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use crate::test_helpers::{admin_auth_header, create_test_client};
 
@@ -320,8 +320,7 @@ fn test_get_collection_success() {
         .body(json!({ "game_id": game_id, "name": "My Collection" }).to_string())
         .dispatch();
 
-    let create_body: Value =
-        serde_json::from_str(&create_response.into_string().unwrap()).unwrap();
+    let create_body: Value = serde_json::from_str(&create_response.into_string().unwrap()).unwrap();
     let collection_id = create_body["id"].as_i64().unwrap();
 
     // Get collection
@@ -380,8 +379,7 @@ fn test_get_collection_not_owner() {
         .body(json!({ "game_id": game_id, "name": "User1 Collection" }).to_string())
         .dispatch();
 
-    let create_body: Value =
-        serde_json::from_str(&create_response.into_string().unwrap()).unwrap();
+    let create_body: Value = serde_json::from_str(&create_response.into_string().unwrap()).unwrap();
     let collection_id = create_body["id"].as_i64().unwrap();
 
     // Create user 2 and try to access user 1's collection
@@ -706,7 +704,8 @@ fn test_update_collection_cards_game_mismatch() {
     let mtg_card_ids = create_cards(&client, mtg_id, mtg_set_id, vec![("Black Lotus", "001")]);
 
     // Create a Pokemon collection
-    let collection_id = create_collection(&client, &session_id, pokemon_id, "My Pokemon Collection");
+    let collection_id =
+        create_collection(&client, &session_id, pokemon_id, "My Pokemon Collection");
 
     // Try to add MTG card to Pokemon collection
     let response = client

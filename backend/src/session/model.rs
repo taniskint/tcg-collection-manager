@@ -1,5 +1,5 @@
 use bcrypt::verify;
-use rusqlite::{params, Connection, Error as SqliteError};
+use rusqlite::{Connection, Error as SqliteError, params};
 use uuid::Uuid;
 
 #[derive(Debug)]

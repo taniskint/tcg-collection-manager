@@ -1,4 +1,4 @@
-use rusqlite::{params, Connection, Error as SqliteError};
+use rusqlite::{Connection, Error as SqliteError, params};
 
 pub struct Game {
     pub id: i64,

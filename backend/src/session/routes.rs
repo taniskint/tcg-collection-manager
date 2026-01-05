@@ -1,6 +1,6 @@
+use rocket::State;
 use rocket::http::{Cookie, CookieJar, Status};
 use rocket::serde::json::Json;
-use rocket::State;
 use serde::{Deserialize, Serialize};
 
 use crate::{DbConn, ErrorResponse};
@@ -26,21 +26,20 @@ pub fn create(
 ) -> Result<Status, (Status, Json<ErrorResponse>)> {
     let conn = db.0.lock().unwrap();
 
-    let session_id =
-        super::create(&conn, &req.email_or_username, &req.password).map_err(|e| {
-            let (status, error) = match e {
-                super::CreateSessionError::InvalidCredentials => {
-                    (Status::Unauthorized, "Invalid credentials")
-                }
-                super::CreateSessionError::VerifyError => {
-                    (Status::InternalServerError, "Failed to verify password")
-                }
-                super::CreateSessionError::DatabaseError => {
-                    (Status::InternalServerError, "Failed to create session")
-                }
-            };
-            (status, Json(ErrorResponse::new(error)))
-        })?;
+    let session_id = super::create(&conn, &req.email_or_username, &req.password).map_err(|e| {
+        let (status, error) = match e {
+            super::CreateSessionError::InvalidCredentials => {
+                (Status::Unauthorized, "Invalid credentials")
+            }
+            super::CreateSessionError::VerifyError => {
+                (Status::InternalServerError, "Failed to verify password")
+            }
+            super::CreateSessionError::DatabaseError => {
+                (Status::InternalServerError, "Failed to create session")
+            }
+        };
+        (status, Json(ErrorResponse::new(error)))
+    })?;
 
     cookies.add(Cookie::new("session_id", session_id));
 
@@ -62,7 +61,12 @@ pub fn get(
                 email: user.email,
             })
         })
-        .ok_or_else(|| (Status::NotFound, Json(ErrorResponse::new("Session not found"))))
+        .ok_or_else(|| {
+            (
+                Status::NotFound,
+                Json(ErrorResponse::new("Session not found")),
+            )
+        })
 }
 
 #[delete("/<session_id>")]

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use rusqlite::{params, Connection, Error as SqliteError};
+use rusqlite::{Connection, Error as SqliteError, params};
 
 pub struct CollectionWithGame {
     pub id: i64,
@@ -80,7 +80,10 @@ pub fn create(
     Ok(conn.last_insert_rowid())
 }
 
-pub fn list_by_user(conn: &Connection, user_id: i64) -> Result<Vec<CollectionWithGame>, SqliteError> {
+pub fn list_by_user(
+    conn: &Connection,
+    user_id: i64,
+) -> Result<Vec<CollectionWithGame>, SqliteError> {
     let mut stmt = conn.prepare(
         "SELECT c.id, c.user_id, c.game_id, c.name, c.created_at, g.name, g.image_url,
                 COALESCE(SUM(cc.quantity), 0) as card_count
@@ -110,7 +113,11 @@ pub fn list_by_user(conn: &Connection, user_id: i64) -> Result<Vec<CollectionWit
     Ok(collections)
 }
 
-pub fn get(conn: &Connection, id: i64, user_id: i64) -> Result<CollectionWithGame, GetCollectionError> {
+pub fn get(
+    conn: &Connection,
+    id: i64,
+    user_id: i64,
+) -> Result<CollectionWithGame, GetCollectionError> {
     let result = conn.query_row(
         "SELECT c.id, c.user_id, c.game_id, c.name, c.created_at, g.name, g.image_url,
                 COALESCE(SUM(cc.quantity), 0) as card_count

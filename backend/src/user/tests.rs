@@ -1,6 +1,6 @@
 use rocket::http::{ContentType, Status};
 use rocket::local::blocking::Client;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use crate::test_helpers::create_test_client;
 

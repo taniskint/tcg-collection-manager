@@ -1,8 +1,8 @@
 use rocket::http::{ContentType, Header, Status};
 use rocket::local::blocking::Client;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
-use crate::test_helpers::{admin_auth_header, create_test_client, TEST_ADMIN_KEY};
+use crate::test_helpers::{TEST_ADMIN_KEY, admin_auth_header, create_test_client};
 
 // ============================================================================
 // Helper Functions
@@ -151,7 +151,11 @@ fn test_get_game_success() {
     let client = create_test_client();
 
     // Create a game first
-    let create_response = create_game(&client, "Pokemon TCG", Some("https://example.com/pokemon.png"));
+    let create_response = create_game(
+        &client,
+        "Pokemon TCG",
+        Some("https://example.com/pokemon.png"),
+    );
     let game_id = create_response["id"].as_i64().unwrap();
 
     // Get the game

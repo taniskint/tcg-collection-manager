@@ -1,4 +1,4 @@
-use rusqlite::{params, Connection, Error as SqliteError};
+use rusqlite::{Connection, Error as SqliteError, params};
 
 pub struct Set {
     pub id: i64,
@@ -50,7 +50,8 @@ pub fn create(
 
 // TODO: Add card_count field when that feature is implemented
 pub fn get(conn: &Connection, game_id: i64, set_id: i64) -> Result<Option<Set>, SqliteError> {
-    let mut stmt = conn.prepare("SELECT id, name, image_url FROM sets WHERE game_id = ?1 AND id = ?2")?;
+    let mut stmt =
+        conn.prepare("SELECT id, name, image_url FROM sets WHERE game_id = ?1 AND id = ?2")?;
 
     let mut rows = stmt.query(params![game_id, set_id])?;
     match rows.next()? {

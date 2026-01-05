@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Deck - TCG Collection Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="deck.css">
+</head>
+<body>
+    <nav>
+        <div class="nav-header">
+            <a href="index.html"><p>TCG Collection Manager</p></a>
+            <div id="show-links" class="show-links">+</div>
+        </div>
+        <ul hidden id="nav-links" class="nav-links">
+            <li><a href="games.html"><p>Games</p></a></li>
+            <li><a href="collections.html"><p>Collections</p></a></li>
+            <li><a href="decks.html"><p>Decks</p></a></li>
+            <li><a href="account.html"><p>Account</p></a></li>
+            <li><button id="logout-btn">Log Out</button></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section id="page-header" class="page-header" hidden>
+            <div class="page-header-card">
+                <nav class="breadcrumb">
+                    <a href="decks.html">Decks</a>
+                    <span class="breadcrumb-separator">/</span>
+                    <span id="breadcrumb-deck" class="breadcrumb-current"></span>
+                </nav>
+                <div class="page-header-content">
+                    <img id="game-logo" src="" alt="" class="page-header-logo">
+                    <div class="page-header-text">
+                        <h1 id="deck-name"></h1>
+                        <p id="deck-collection"></p>
+                        <p class="deck-meta"><span id="stat-cards">0</span> cards · Created <span id="stat-created"></span></p>
+                    </div>
+                    <div class="page-header-actions">
+                        <button class="btn btn-primary" id="add-cards-btn" disabled>+ Add Cards</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="cards-grid" class="cards-grid" hidden>
+        </section>
+
+        <section id="cards-empty" class="cards-empty" hidden>
+            <p>No cards in this deck yet. Card management coming soon!</p>
+        </section>
+
+        <div id="deck-loading" class="deck-loading">
+            <p>Loading deck...</p>
+        </div>
+
+        <div id="deck-error" class="deck-error" hidden>
+            <p>Failed to load deck.</p>
+            <a href="decks.html" class="btn btn-secondary">Return to Decks</a>
+        </div>
+    </main>
+
+    <script type="module" src="dist/deck.js"></script>
+</body>
+</html>

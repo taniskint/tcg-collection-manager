@@ -1,0 +1,225 @@
+/* Page header */
+.page-header {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px 16px 16px;
+}
+
+.page-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.page-header h1 {
+    color: var(--text-emphasis);
+    margin-bottom: 8px;
+}
+
+/* Modal styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal[hidden] {
+    display: none;
+}
+
+.modal-content {
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    width: 90%;
+    max-width: 400px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    color: var(--text-emphasis);
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    padding: 0;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    color: var(--text-emphasis);
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--text-emphasis);
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--text-emphasis);
+}
+
+.form-error {
+    color: #dc3545;
+    margin-bottom: 16px;
+    padding: 8px 12px;
+    background-color: rgba(220, 53, 69, 0.1);
+    border-radius: 4px;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* Decks container */
+.decks-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+/* Collection group */
+.collection-group {
+    margin-bottom: 32px;
+}
+
+.collection-group-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.collection-group-header img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.collection-group-header h2 {
+    color: var(--text-emphasis);
+    font-size: 1.25rem;
+    margin: 0;
+}
+
+.collection-group-header .game-name {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+/* Decks grid within each group */
+.decks-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* Deck card styling (smaller than collection cards) */
+.deck-card {
+    display: flex;
+    flex-direction: column;
+    width: 200px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: var(--bg-elevated);
+    transition: box-shadow 0.1s linear;
+}
+
+.deck-card:hover {
+    box-shadow: 0 0 8px var(--border);
+}
+
+.deck-card h3 {
+    color: var(--text-emphasis);
+    font-size: 1rem;
+    margin-bottom: 8px;
+}
+
+.deck-meta {
+    font-size: 0.8rem;
+    color: var(--text-primary);
+}
+
+.deck-meta p {
+    margin-bottom: 4px;
+}
+
+.deck-meta p:last-child {
+    margin-bottom: 0;
+}
+
+/* Loading, error, empty states */
+.decks-loading,
+.decks-error,
+.decks-empty {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 32px 16px;
+    text-align: center;
+}
+
+.decks-error .btn,
+.decks-empty .btn {
+    margin-top: 16px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .decks-grid {
+        justify-content: center;
+    }
+
+    .deck-card {
+        width: 100%;
+        max-width: 280px;
+    }
+
+    .collection-group-header {
+        flex-wrap: wrap;
+    }
+}

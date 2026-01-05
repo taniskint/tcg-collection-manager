@@ -3,7 +3,7 @@ use std::sync::Mutex;
 use rocket::local::blocking::Client;
 use rusqlite::Connection;
 
-use crate::{build_rocket, init_db, Config, DbConn};
+use crate::{Config, DbConn, build_rocket, init_db};
 
 /// Default test admin API key
 pub const TEST_ADMIN_KEY: &str = "test-admin-key-12345";

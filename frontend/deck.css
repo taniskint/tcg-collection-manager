@@ -1,0 +1,128 @@
+/* Page header */
+.page-header {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px 16px 16px;
+}
+
+.page-header-card {
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 0 0 12px 0;
+    font-size: 0.9rem;
+    background-color: transparent;
+}
+
+.breadcrumb a {
+    color: var(--text-primary);
+}
+
+.breadcrumb a:hover {
+    color: var(--text-emphasis);
+}
+
+.breadcrumb-separator {
+    color: var(--text-primary);
+}
+
+.breadcrumb-current {
+    color: var(--text-emphasis);
+}
+
+/* Page header content */
+.page-header-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.page-header-logo {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.page-header-text {
+    flex: 1;
+}
+
+.page-header-text h1 {
+    color: var(--text-emphasis);
+    margin-bottom: 4px;
+}
+
+.page-header-text p {
+    margin-bottom: 4px;
+}
+
+.deck-meta {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.page-header-actions {
+    flex-shrink: 0;
+}
+
+/* Cards grid */
+.cards-grid {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+/* Empty state */
+.cards-empty {
+    max-width: calc(1000px - 32px);
+    margin: 0 auto;
+    padding: 32px 16px;
+    text-align: center;
+    background-color: var(--bg-recessed);
+    border-radius: 8px;
+}
+
+/* Loading and error states */
+.deck-loading,
+.deck-error {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 32px 16px;
+    text-align: center;
+}
+
+.deck-error .btn {
+    margin-top: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .page-header-content {
+        flex-wrap: wrap;
+    }
+
+    .page-header-actions {
+        width: 100%;
+        margin-top: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-header-logo {
+        width: 48px;
+        height: 48px;
+    }
+}
