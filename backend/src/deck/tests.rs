@@ -367,3 +367,344 @@ fn test_get_deck_not_owner() {
     let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
     assert_eq!(body["error"], "Access denied");
 }
+
+// ============================================================================
+// Helper Functions for Deck Cards Tests
+// ============================================================================
+
+fn create_set(client: &Client, game_id: i64, name: &str, code: &str) -> i64 {
+    let response = client
+        .post(format!("/api/games/{}/sets", game_id))
+        .header(ContentType::JSON)
+        .header(Header::new("Authorization", admin_auth_header()))
+        .body(json!({ "name": name, "code": code }).to_string())
+        .dispatch();
+
+    assert_eq!(response.status(), Status::Ok);
+
+    let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
+    body["id"].as_i64().unwrap()
+}
+
+fn create_card(client: &Client, game_id: i64, set_id: i64, name: &str, collector_number: &str) -> i64 {
+    let response = client
+        .post(format!("/api/games/{}/sets/{}/cards", game_id, set_id))
+        .header(ContentType::JSON)
+        .header(Header::new("Authorization", admin_auth_header()))
+        .body(
+            json!([{
+                "name": name,
+                "collector_number": collector_number,
+                "attributes": { "rarity": "Common" }
+            }])
+            .to_string(),
+        )
+        .dispatch();
+
+    assert_eq!(response.status(), Status::Ok);
+
+    let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
+    body["ids"][0].as_i64().unwrap()
+}
+
+fn add_card_to_collection(client: &Client, session_id: &str, collection_id: i64, card_id: i64, quantity: i64) {
+    let response = client
+        .patch(format!("/api/collections/{}/cards", collection_id))
+        .header(ContentType::JSON)
+        .cookie(Cookie::new("session_id", session_id.to_string()))
+        .body(json!([{ "card_id": card_id, "quantity": quantity }]).to_string())
+        .dispatch();
+
+    assert_eq!(response.status(), Status::NoContent);
+}
+
+// ============================================================================
+// GET /api/decks/<id>/cards (List Deck Cards)
+// ============================================================================
+
+#[test]
+fn test_list_deck_cards_empty() {
+    let client = create_test_client();
+    create_user(&client, "testuser", "test@example.com", "password123");
+    let session_id = login(&client, "testuser", "password123");
+    let game_id = create_game(&client, "Pokemon TCG");
+    let collection_id = create_collection(&client, &session_id, game_id, "My Collection");
+    let deck_id = create_deck(&client, &session_id, collection_id, "My Deck");
+
+    let response = client
+        .get(format!("/api/decks/{}/cards", deck_id))
+        .cookie(Cookie::new("session_id", session_id))
+        .dispatch();
+
+    assert_eq!(response.status(), Status::Ok);
+
+    let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
+    let cards = body.as_array().unwrap();
+    assert_eq!(cards.len(), 0);
+}
+
+#[test]
+fn test_list_deck_cards_without_auth() {
+    let client = create_test_client();
+
+    let response = client.get("/api/decks/1/cards").dispatch();
+
+    assert_eq!(response.status(), Status::Unauthorized);
+}
+
+#[test]
+fn test_list_deck_cards_not_found() {
+    let client = create_test_client();
+    create_user(&client, "testuser", "test@example.com", "password123");
+    let session_id = login(&client, "testuser", "password123");
+
+    let response = client
+        .get("/api/decks/99999/cards")
+        .cookie(Cookie::new("session_id", session_id))
+        .dispatch();
+
+    assert_eq!(response.status(), Status::NotFound);
+}
+
+#[test]
+fn test_list_deck_cards_not_owner() {
+    let client = create_test_client();
+    let game_id = create_game(&client, "Pokemon TCG");
+
+    create_user(&client, "user1", "user1@example.com", "password123");
+    let session1 = login(&client, "user1", "password123");
+    let collection_id = create_collection(&client, &session1, game_id, "User1 Collection");
+    let deck_id = create_deck(&client, &session1, collection_id, "User1 Deck");
+
+    create_user(&client, "user2", "user2@example.com", "password123");
+    let session2 = login(&client, "user2", "password123");
+
+    let response = client
+        .get(format!("/api/decks/{}/cards", deck_id))
+        .cookie(Cookie::new("session_id", session2))
+        .dispatch();
+
+    assert_eq!(response.status(), Status::Forbidden);
+}
+
+#[test]
+fn test_list_deck_cards_with_cards() {
+    let client = create_test_client();
+    create_user(&client, "testuser", "test@example.com", "password123");
+    let session_id = login(&client, "testuser", "password123");
+    let game_id = create_game(&client, "Pokemon TCG");
+    let set_id = create_set(&client, game_id, "Base Set", "BS");
+    let card_id = create_card(&client, game_id, set_id, "Pikachu", "001");
+    let collection_id = create_collection(&client, &session_id, game_id, "My Collection");
+
+    // Add card to collection first
+    add_card_to_collection(&client, &session_id, collection_id, card_id, 4);
+
+    let deck_id = create_deck(&client, &session_id, collection_id, "My Deck");
+
+    // Add card to deck
+    let response = client
+        .patch(format!("/api/decks/{}/cards", deck_id))
+        .header(ContentType::JSON)
+        .cookie(Cookie::new("session_id", session_id.clone()))
+        .body(json!([{ "card_id": card_id, "quantity": 2 }]).to_string())
+        .dispatch();
+
+    assert_eq!(response.status(), Status::NoContent);
+
+    // List deck cards
+    let response = client
+        .get(format!("/api/decks/{}/cards", deck_id))
+        .cookie(Cookie::new("session_id", session_id))
+        .dispatch();
+
+    assert_eq!(response.status(), Status::Ok);
+
+    let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
+    let cards = body.as_array().unwrap();
+    assert_eq!(cards.len(), 1);
+    assert_eq!(cards[0]["name"], "Pikachu");
+    assert_eq!(cards[0]["quantity"], 2);
+}
+
+// ============================================================================
+// PATCH /api/decks/<id>/cards (Update Deck Cards)
+// ============================================================================
+
+#[test]
+fn test_update_deck_cards_add() {
+    let client = create_test_client();
+    create_user(&client, "testuser", "test@example.com", "password123");
+    let session_id = login(&client, "testuser", "password123");
+    let game_id = create_game(&client, "Pokemon TCG");
+    let set_id = create_set(&client, game_id, "Base Set", "BS");
+    let card_id = create_card(&client, game_id, set_id, "Pikachu", "001");
+    let collection_id = create_collection(&client, &session_id, game_id, "My Collection");
+
+    // Add card to collection first
+    add_card_to_collection(&client, &session_id, collection_id, card_id, 4);
+
+    let deck_id = create_deck(&client, &session_id, collection_id, "My Deck");
+
+    let response = client
+        .patch(format!("/api/decks/{}/cards", deck_id))
+        .header(ContentType::JSON)
+        .cookie(Cookie::new("session_id", session_id.clone()))
+        .body(json!([{ "card_id": card_id, "quantity": 3 }]).to_string())
+        .dispatch();
+
+    assert_eq!(response.status(), Status::NoContent);
+
+    // Verify card count updated
+    let response = client
+        .get(format!("/api/decks/{}", deck_id))
+        .cookie(Cookie::new("session_id", session_id))
+        .dispatch();
+
+    let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
+    assert_eq!(body["card_count"], 3);
+}
+
+#[test]
+fn test_update_deck_cards_without_auth() {
+    let client = create_test_client();
+
+    let response = client
+        .patch("/api/decks/1/cards")
+        .header(ContentType::JSON)
+        .body(json!([{ "card_id": 1, "quantity": 1 }]).to_string())
+        .dispatch();
+
+    assert_eq!(response.status(), Status::Unauthorized);
+}
+
+#[test]
+fn test_update_deck_cards_not_found() {
+    let client = create_test_client();
+    create_user(&client, "testuser", "test@example.com", "password123");
+    let session_id = login(&client, "testuser", "password123");
+
+    let response = client
+        .patch("/api/decks/99999/cards")
+        .header(ContentType::JSON)
+        .cookie(Cookie::new("session_id", session_id))
+        .body(json!([{ "card_id": 1, "quantity": 1 }]).to_string())
+        .dispatch();
+
+    assert_eq!(response.status(), Status::NotFound);
+}
+
+#[test]
+fn test_update_deck_cards_not_owner() {
+    let client = create_test_client();
+    let game_id = create_game(&client, "Pokemon TCG");
+
+    create_user(&client, "user1", "user1@example.com", "password123");
+    let session1 = login(&client, "user1", "password123");
+    let collection_id = create_collection(&client, &session1, game_id, "User1 Collection");
+    let deck_id = create_deck(&client, &session1, collection_id, "User1 Deck");
+
+    create_user(&client, "user2", "user2@example.com", "password123");
+    let session2 = login(&client, "user2", "password123");
+
+    let response = client
+        .patch(format!("/api/decks/{}/cards", deck_id))
+        .header(ContentType::JSON)
+        .cookie(Cookie::new("session_id", session2))
+        .body(json!([{ "card_id": 1, "quantity": 1 }]).to_string())
+        .dispatch();
+
+    assert_eq!(response.status(), Status::Forbidden);
+}
+
+#[test]
+fn test_update_deck_cards_card_not_in_collection() {
+    let client = create_test_client();
+    create_user(&client, "testuser", "test@example.com", "password123");
+    let session_id = login(&client, "testuser", "password123");
+    let game_id = create_game(&client, "Pokemon TCG");
+    let set_id = create_set(&client, game_id, "Base Set", "BS");
+    let card_id = create_card(&client, game_id, set_id, "Pikachu", "001");
+    let collection_id = create_collection(&client, &session_id, game_id, "My Collection");
+    // Note: NOT adding card to collection
+    let deck_id = create_deck(&client, &session_id, collection_id, "My Deck");
+
+    let response = client
+        .patch(format!("/api/decks/{}/cards", deck_id))
+        .header(ContentType::JSON)
+        .cookie(Cookie::new("session_id", session_id))
+        .body(json!([{ "card_id": card_id, "quantity": 1 }]).to_string())
+        .dispatch();
+
+    assert_eq!(response.status(), Status::BadRequest);
+
+    let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
+    assert_eq!(body["error"], "Card not in collection");
+}
+
+#[test]
+fn test_update_deck_cards_insufficient_quantity() {
+    let client = create_test_client();
+    create_user(&client, "testuser", "test@example.com", "password123");
+    let session_id = login(&client, "testuser", "password123");
+    let game_id = create_game(&client, "Pokemon TCG");
+    let set_id = create_set(&client, game_id, "Base Set", "BS");
+    let card_id = create_card(&client, game_id, set_id, "Pikachu", "001");
+    let collection_id = create_collection(&client, &session_id, game_id, "My Collection");
+    // Add only 3 cards to collection
+    add_card_to_collection(&client, &session_id, collection_id, card_id, 3);
+    let deck_id = create_deck(&client, &session_id, collection_id, "My Deck");
+
+    // Try to add 5 cards to deck (more than collection has)
+    let response = client
+        .patch(format!("/api/decks/{}/cards", deck_id))
+        .header(ContentType::JSON)
+        .cookie(Cookie::new("session_id", session_id))
+        .body(json!([{ "card_id": card_id, "quantity": 5 }]).to_string())
+        .dispatch();
+
+    assert_eq!(response.status(), Status::BadRequest);
+
+    let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
+    assert_eq!(body["error"], "Quantity exceeds collection");
+}
+
+#[test]
+fn test_update_deck_cards_remove() {
+    let client = create_test_client();
+    create_user(&client, "testuser", "test@example.com", "password123");
+    let session_id = login(&client, "testuser", "password123");
+    let game_id = create_game(&client, "Pokemon TCG");
+    let set_id = create_set(&client, game_id, "Base Set", "BS");
+    let card_id = create_card(&client, game_id, set_id, "Pikachu", "001");
+    let collection_id = create_collection(&client, &session_id, game_id, "My Collection");
+    add_card_to_collection(&client, &session_id, collection_id, card_id, 4);
+    let deck_id = create_deck(&client, &session_id, collection_id, "My Deck");
+
+    // Add card to deck
+    client
+        .patch(format!("/api/decks/{}/cards", deck_id))
+        .header(ContentType::JSON)
+        .cookie(Cookie::new("session_id", session_id.clone()))
+        .body(json!([{ "card_id": card_id, "quantity": 2 }]).to_string())
+        .dispatch();
+
+    // Remove card from deck (quantity 0)
+    let response = client
+        .patch(format!("/api/decks/{}/cards", deck_id))
+        .header(ContentType::JSON)
+        .cookie(Cookie::new("session_id", session_id.clone()))
+        .body(json!([{ "card_id": card_id, "quantity": 0 }]).to_string())
+        .dispatch();
+
+    assert_eq!(response.status(), Status::NoContent);
+
+    // Verify card count is 0
+    let response = client
+        .get(format!("/api/decks/{}", deck_id))
+        .cookie(Cookie::new("session_id", session_id))
+        .dispatch();
+
+    let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
+    assert_eq!(body["card_count"], 0);
+}

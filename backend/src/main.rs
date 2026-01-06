@@ -108,6 +108,7 @@ pub fn init_db(conn: &Connection) {
     collection::init_collection_cards_table(conn)
         .expect("Failed to initialize collection_cards table");
     deck::init_table(conn).expect("Failed to initialize decks table");
+    deck::init_deck_cards_table(conn).expect("Failed to initialize deck_cards table");
 }
 
 fn load_config() -> Config {
