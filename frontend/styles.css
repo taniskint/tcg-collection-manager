@@ -137,3 +137,12 @@ main {
     padding: 12px 32px;
     font-size: 1.1rem;
 }
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn:disabled:hover {
+    box-shadow: none;
+}

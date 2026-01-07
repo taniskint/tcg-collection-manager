@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate rocket;
 
+mod booster;
 mod card;
 mod collection;
 mod deck;
@@ -109,6 +110,7 @@ pub fn init_db(conn: &Connection) {
         .expect("Failed to initialize collection_cards table");
     deck::init_table(conn).expect("Failed to initialize decks table");
     deck::init_deck_cards_table(conn).expect("Failed to initialize deck_cards table");
+    booster::init_table(conn).expect("Failed to initialize boosters table");
 }
 
 fn load_config() -> Config {
@@ -128,6 +130,8 @@ pub fn build_rocket(db_conn: DbConn, config: Config) -> rocket::Rocket<rocket::B
         .mount("/api/games", card::routes::routes())
         .mount("/api/collections", collection::routes::routes())
         .mount("/api/decks", deck::routes::routes())
+        .mount("/api/games", booster::routes::routes())
+        .mount("/api/boosters", booster::routes::open_routes())
 }
 
 #[launch]

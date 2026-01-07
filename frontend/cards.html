@@ -38,6 +38,9 @@
                         <h1 id="set-name"></h1>
                         <p id="card-count"></p>
                     </div>
+                    <div class="page-header-actions">
+                        <button class="btn btn-primary" id="open-pack-btn" disabled>Open Booster Pack</button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -58,6 +61,54 @@
             <!-- Cards loaded dynamically -->
         </section>
     </main>
+
+    <div class="modal-overlay" id="open-pack-modal" hidden>
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Open Booster Pack</h2>
+                <button class="btn-icon modal-close" id="pack-modal-close">&times;</button>
+            </div>
+            <form class="modal-form" id="open-pack-form">
+                <div class="form-group">
+                    <label for="pack-type">Pack Type</label>
+                    <select id="pack-type" name="pack-type" required>
+                        <option value="">Select a pack...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="pack-quantity">Quantity</label>
+                    <input type="number" id="pack-quantity" name="pack-quantity" min="1" max="36" value="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="pack-collection">Add cards to collection</label>
+                    <select id="pack-collection" name="pack-collection" required>
+                        <option value="">Select a collection...</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="pack-modal-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Open Packs</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="pack-results-modal" hidden>
+        <div class="modal modal-xl">
+            <div class="modal-header">
+                <h2 id="results-title">You opened packs!</h2>
+                <button class="btn-icon modal-close" id="results-modal-close">&times;</button>
+            </div>
+            <div class="modal-body pack-results-body">
+                <p id="results-summary" class="pack-results-info"></p>
+                <div id="pack-results-grid" class="pack-results-grid"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="results-open-another">Open More Packs</button>
+                <button class="btn btn-primary" id="results-done">Done</button>
+            </div>
+        </div>
+    </div>
 
     <script type="module" src="dist/cards.js"></script>
 </body>
