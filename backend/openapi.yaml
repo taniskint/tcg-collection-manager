@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
   title: TCG Collection Manager API
-  description: REST API for managing trading card game collections, including games, sets, cards, users, and sessions.
-  version: 0.1.0
+  description: REST API for managing trading card game collections, including games, sets, cards, user collections, decks, and booster packs.
+  version: 0.2.0
 
 servers:
   - url: http://localhost:8000
@@ -14,6 +14,12 @@ components:
       type: http
       scheme: bearer
       description: Admin API key for protected endpoints
+
+    SessionCookie:
+      type: apiKey
+      in: cookie
+      name: session_id
+      description: Session cookie for authenticated user endpoints
 
   schemas:
     Error:
@@ -145,6 +151,7 @@ components:
       type: object
       required:
         - name
+        - publish_date
       properties:
         name:
           type: string
@@ -154,6 +161,11 @@ components:
           format: uri
           nullable: true
           example: "https://example.com/shrouded-fable.png"
+        publish_date:
+          type: string
+          format: date
+          description: ISO 8601 date (YYYY-MM-DD)
+          example: "2024-08-02"
 
     SetResponse:
       type: object
@@ -170,6 +182,7 @@ components:
       required:
         - id
         - name
+        - publish_date
       properties:
         id:
           type: integer
@@ -183,6 +196,11 @@ components:
           format: uri
           nullable: true
           example: "https://example.com/shrouded-fable.png"
+        publish_date:
+          type: string
+          format: date
+          description: ISO 8601 date (YYYY-MM-DD)
+          example: "2024-08-02"
 
     CreateCardRequest:
       type: object
@@ -255,21 +273,407 @@ components:
             rarity: "common"
             type: "electric"
 
-paths:
-  /:
-    get:
-      summary: Health check
-      description: Simple health check endpoint
-      operationId: index
-      responses:
-        '200':
-          description: Server is running
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "Hello, world!"
+    # Collection schemas
+    CreateCollectionRequest:
+      type: object
+      required:
+        - game_id
+        - name
+      properties:
+        game_id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "My Pokemon Collection"
 
+    CollectionResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+
+    UpdateCollectionRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: "My Renamed Collection"
+
+    CollectionListItem:
+      type: object
+      required:
+        - id
+        - game_id
+        - name
+        - created_at
+        - game_name
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        game_id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "My Pokemon Collection"
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        game_name:
+          type: string
+          example: "Pokemon TCG"
+        game_image_url:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://example.com/pokemon-logo.png"
+
+    CollectionDetail:
+      type: object
+      required:
+        - id
+        - game_id
+        - name
+        - created_at
+        - game_name
+        - card_count
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        game_id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "My Pokemon Collection"
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        game_name:
+          type: string
+          example: "Pokemon TCG"
+        game_image_url:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://example.com/pokemon-logo.png"
+        card_count:
+          type: integer
+          format: int64
+          example: 150
+
+    CollectionCardItem:
+      type: object
+      required:
+        - id
+        - name
+        - collector_number
+        - attributes
+        - set_id
+        - set_name
+        - quantity
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "Pikachu"
+        collector_number:
+          type: string
+          example: "025"
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://example.com/pikachu.png"
+        attributes:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            rarity: "common"
+            type: "electric"
+        set_id:
+          type: integer
+          format: int64
+          example: 1
+        set_name:
+          type: string
+          example: "Shrouded Fable"
+        quantity:
+          type: integer
+          format: int64
+          example: 3
+
+    CardQuantityUpdate:
+      type: object
+      required:
+        - card_id
+        - quantity
+      properties:
+        card_id:
+          type: integer
+          format: int64
+          example: 1
+        quantity:
+          type: integer
+          format: int64
+          description: The new quantity (0 to remove from collection)
+          example: 3
+
+    # Deck schemas
+    CreateDeckRequest:
+      type: object
+      required:
+        - collection_id
+        - name
+      properties:
+        collection_id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "Electric Theme Deck"
+
+    DeckResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+
+    UpdateDeckRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: "My Renamed Deck"
+
+    DeckListItem:
+      type: object
+      required:
+        - id
+        - collection_id
+        - name
+        - created_at
+        - collection_name
+        - game_name
+        - card_count
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        collection_id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "Electric Theme Deck"
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        collection_name:
+          type: string
+          example: "My Pokemon Collection"
+        game_name:
+          type: string
+          example: "Pokemon TCG"
+        game_image_url:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://example.com/pokemon-logo.png"
+        card_count:
+          type: integer
+          format: int64
+          example: 60
+
+    DeckCardItem:
+      type: object
+      required:
+        - id
+        - name
+        - collector_number
+        - attributes
+        - set_id
+        - set_name
+        - quantity
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "Pikachu"
+        collector_number:
+          type: string
+          example: "025"
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://example.com/pikachu.png"
+        attributes:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            rarity: "common"
+            type: "electric"
+        set_id:
+          type: integer
+          format: int64
+          example: 1
+        set_name:
+          type: string
+          example: "Shrouded Fable"
+        quantity:
+          type: integer
+          format: int64
+          example: 4
+
+    # Booster schemas
+    CreateBoosterRequest:
+      type: object
+      required:
+        - name
+        - spec
+      properties:
+        name:
+          type: string
+          example: "Standard Booster"
+        spec:
+          type: object
+          description: JSON specification defining the booster pack contents (slots and card selection criteria)
+          example:
+            slots:
+              - count: 5
+                filter:
+                  rarity: "common"
+              - count: 3
+                filter:
+                  rarity: "uncommon"
+              - count: 1
+                filter:
+                  rarity: "rare"
+
+    BoosterResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+
+    BoosterListItem:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "Standard Booster"
+
+    OpenPacksRequest:
+      type: object
+      required:
+        - collection_id
+        - count
+      properties:
+        collection_id:
+          type: integer
+          format: int64
+          description: The collection to add opened cards to
+          example: 1
+        count:
+          type: integer
+          format: int64
+          description: Number of packs to open (must be positive)
+          example: 3
+
+    OpenPacksResponse:
+      type: object
+      required:
+        - cards
+      properties:
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenedCardItem'
+
+    OpenedCardItem:
+      type: object
+      required:
+        - id
+        - name
+        - collector_number
+        - attributes
+        - quantity
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "Pikachu"
+        collector_number:
+          type: string
+          example: "025"
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://example.com/pikachu.png"
+        attributes:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            rarity: "common"
+            type: "electric"
+        quantity:
+          type: integer
+          format: int64
+          description: Number of this card pulled
+          example: 2
+
+paths:
   /api/users:
     post:
       summary: Create a new user
@@ -792,6 +1196,865 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /api/games/{game_id}/sets/{set_id}/boosters:
+    get:
+      summary: List boosters for a set
+      description: Get all booster pack types available for a specific set
+      operationId: listBoosters
+      tags:
+        - Boosters
+      parameters:
+        - name: game_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The game ID
+          example: 1
+        - name: set_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The set ID
+          example: 1
+      responses:
+        '200':
+          description: List of boosters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BoosterListItem'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create a booster pack type
+      description: Create a new booster pack type for a set (admin only)
+      operationId: createBooster
+      tags:
+        - Boosters
+      security:
+        - AdminApiKey: []
+      parameters:
+        - name: game_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The game ID
+          example: 1
+        - name: set_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The set ID
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBoosterRequest'
+      responses:
+        '200':
+          description: Booster created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BoosterResponse'
+        '401':
+          description: Unauthorized - missing or invalid API key
+        '404':
+          description: Set not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Set not found"
+        '409':
+          description: Booster name already exists for this set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Booster name already exists for this set"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/boosters/{booster_id}/open:
+    post:
+      summary: Open booster packs
+      description: Simulate opening booster packs and add the cards to a collection
+      operationId: openBoosters
+      tags:
+        - Boosters
+      security:
+        - SessionCookie: []
+      parameters:
+        - name: booster_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The booster pack type ID
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenPacksRequest'
+      responses:
+        '200':
+          description: Packs opened successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenPacksResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidCount:
+                  value:
+                    error: "Count must be positive"
+                gameMismatch:
+                  value:
+                    error: "Collection does not match booster's game"
+        '401':
+          description: Unauthorized - no valid session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "No session"
+        '403':
+          description: Forbidden - collection not owned by user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Access denied"
+        '404':
+          description: Booster or collection not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                boosterNotFound:
+                  value:
+                    error: "Booster not found"
+                collectionNotFound:
+                  value:
+                    error: "Collection not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/collections:
+    get:
+      summary: List user's collections
+      description: Get all collections owned by the authenticated user
+      operationId: listCollections
+      tags:
+        - Collections
+      security:
+        - SessionCookie: []
+      responses:
+        '200':
+          description: List of collections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CollectionListItem'
+        '401':
+          description: Unauthorized - no valid session
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create a collection
+      description: Create a new card collection for a specific game
+      operationId: createCollection
+      tags:
+        - Collections
+      security:
+        - SessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCollectionRequest'
+      responses:
+        '200':
+          description: Collection created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionResponse'
+        '401':
+          description: Unauthorized - no valid session
+        '404':
+          description: Game not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Game not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/collections/{collection_id}:
+    get:
+      summary: Get collection details
+      description: Get details of a specific collection
+      operationId: getCollection
+      tags:
+        - Collections
+      security:
+        - SessionCookie: []
+      parameters:
+        - name: collection_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The collection ID
+          example: 1
+      responses:
+        '200':
+          description: Collection details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionDetail'
+        '401':
+          description: Unauthorized - no valid session
+        '403':
+          description: Forbidden - collection not owned by user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Access denied"
+        '404':
+          description: Collection not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Collection not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      summary: Update collection
+      description: Update the name of a collection
+      operationId: updateCollection
+      tags:
+        - Collections
+      security:
+        - SessionCookie: []
+      parameters:
+        - name: collection_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The collection ID
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCollectionRequest'
+      responses:
+        '204':
+          description: Collection updated successfully
+        '401':
+          description: Unauthorized - no valid session
+        '403':
+          description: Forbidden - collection not owned by user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Access denied"
+        '404':
+          description: Collection not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Collection not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Delete collection
+      description: Delete a collection and all associated cards and decks
+      operationId: deleteCollection
+      tags:
+        - Collections
+      security:
+        - SessionCookie: []
+      parameters:
+        - name: collection_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The collection ID
+          example: 1
+      responses:
+        '204':
+          description: Collection deleted successfully
+        '401':
+          description: Unauthorized - no valid session
+        '403':
+          description: Forbidden - collection not owned by user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Access denied"
+        '404':
+          description: Collection not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Collection not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/collections/{collection_id}/cards:
+    get:
+      summary: List cards in collection
+      description: Get all cards in a specific collection with quantities
+      operationId: listCollectionCards
+      tags:
+        - Collections
+      security:
+        - SessionCookie: []
+      parameters:
+        - name: collection_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The collection ID
+          example: 1
+      responses:
+        '200':
+          description: List of cards in collection
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CollectionCardItem'
+        '401':
+          description: Unauthorized - no valid session
+        '403':
+          description: Forbidden - collection not owned by user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Access denied"
+        '404':
+          description: Collection not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Collection not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      summary: Update card quantities
+      description: Update the quantities of cards in a collection. Set quantity to 0 to remove a card.
+      operationId: updateCollectionCards
+      tags:
+        - Collections
+      security:
+        - SessionCookie: []
+      parameters:
+        - name: collection_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The collection ID
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CardQuantityUpdate'
+            example:
+              - card_id: 1
+                quantity: 3
+              - card_id: 5
+                quantity: 0
+      responses:
+        '204':
+          description: Cards updated successfully
+        '400':
+          description: Bad request - card doesn't belong to collection's game
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Card does not belong to collection's game"
+        '401':
+          description: Unauthorized - no valid session
+        '403':
+          description: Forbidden - collection not owned by user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Access denied"
+        '404':
+          description: Collection or card not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                collectionNotFound:
+                  value:
+                    error: "Collection not found"
+                cardNotFound:
+                  value:
+                    error: "Card not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/decks:
+    get:
+      summary: List user's decks
+      description: Get all decks owned by the authenticated user
+      operationId: listDecks
+      tags:
+        - Decks
+      security:
+        - SessionCookie: []
+      responses:
+        '200':
+          description: List of decks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeckListItem'
+        '401':
+          description: Unauthorized - no valid session
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create a deck
+      description: Create a new deck within a collection
+      operationId: createDeck
+      tags:
+        - Decks
+      security:
+        - SessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDeckRequest'
+      responses:
+        '200':
+          description: Deck created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeckResponse'
+        '401':
+          description: Unauthorized - no valid session
+        '403':
+          description: Forbidden - collection not owned by user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Access denied"
+        '404':
+          description: Collection not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Collection not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/decks/{deck_id}:
+    get:
+      summary: Get deck details
+      description: Get details of a specific deck
+      operationId: getDeck
+      tags:
+        - Decks
+      security:
+        - SessionCookie: []
+      parameters:
+        - name: deck_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The deck ID
+          example: 1
+      responses:
+        '200':
+          description: Deck details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeckListItem'
+        '401':
+          description: Unauthorized - no valid session
+        '403':
+          description: Forbidden - deck not owned by user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Access denied"
+        '404':
+          description: Deck not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Deck not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      summary: Update deck
+      description: Update the name of a deck
+      operationId: updateDeck
+      tags:
+        - Decks
+      security:
+        - SessionCookie: []
+      parameters:
+        - name: deck_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The deck ID
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDeckRequest'
+      responses:
+        '204':
+          description: Deck updated successfully
+        '401':
+          description: Unauthorized - no valid session
+        '403':
+          description: Forbidden - deck not owned by user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Access denied"
+        '404':
+          description: Deck not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Deck not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Delete deck
+      description: Delete a deck and all associated cards
+      operationId: deleteDeck
+      tags:
+        - Decks
+      security:
+        - SessionCookie: []
+      parameters:
+        - name: deck_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The deck ID
+          example: 1
+      responses:
+        '204':
+          description: Deck deleted successfully
+        '401':
+          description: Unauthorized - no valid session
+        '403':
+          description: Forbidden - deck not owned by user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Access denied"
+        '404':
+          description: Deck not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Deck not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/decks/{deck_id}/cards:
+    get:
+      summary: List cards in deck
+      description: Get all cards in a specific deck with quantities
+      operationId: listDeckCards
+      tags:
+        - Decks
+      security:
+        - SessionCookie: []
+      parameters:
+        - name: deck_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The deck ID
+          example: 1
+      responses:
+        '200':
+          description: List of cards in deck
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeckCardItem'
+        '401':
+          description: Unauthorized - no valid session
+        '403':
+          description: Forbidden - deck not owned by user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Access denied"
+        '404':
+          description: Deck not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Deck not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      summary: Update deck card quantities
+      description: Update the quantities of cards in a deck. Cards must exist in the parent collection. Quantity cannot exceed collection quantity.
+      operationId: updateDeckCards
+      tags:
+        - Decks
+      security:
+        - SessionCookie: []
+      parameters:
+        - name: deck_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The deck ID
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CardQuantityUpdate'
+            example:
+              - card_id: 1
+                quantity: 4
+              - card_id: 5
+                quantity: 2
+      responses:
+        '204':
+          description: Deck cards updated successfully
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                cardNotInCollection:
+                  value:
+                    error: "Card not in collection"
+                insufficientQuantity:
+                  value:
+                    error: "Quantity exceeds collection"
+        '401':
+          description: Unauthorized - no valid session
+        '403':
+          description: Forbidden - deck not owned by user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Access denied"
+        '404':
+          description: Deck not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Deck not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 tags:
   - name: Users
     description: User registration
@@ -803,3 +2066,9 @@ tags:
     description: Card sets within games
   - name: Cards
     description: Individual cards within sets
+  - name: Boosters
+    description: Booster pack types and pack opening
+  - name: Collections
+    description: User card collections
+  - name: Decks
+    description: User decks built from collections

@@ -1,0 +1,32 @@
+/* Penumbra color scheme - Light theme (default) */
+:root {
+    --sun-plus: #fffdfb;
+    --sun: #fff7ed;
+    --sun-minus: #f2e6d4;
+    --sky-plus: #bebebe;
+    --sky: #8f8f8f;
+    --sky-minus: #636363;
+    --shade-plus: #3e4044;
+    --shade: #303338;
+    --shade-minus: #24272b;
+
+    /* Semantic color mappings for light theme */
+    --bg-primary: var(--sun);
+    --bg-elevated: var(--sun-plus);
+    --bg-recessed: var(--sun-minus);
+    --text-primary: var(--sky-minus);
+    --text-emphasis: var(--shade);
+    --border: var(--shade);
+}
+
+/* Dark theme */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-primary: var(--shade);
+        --bg-elevated: var(--shade-plus);
+        --bg-recessed: var(--shade-minus);
+        --text-primary: var(--sky);
+        --text-emphasis: var(--sun);
+        --border: var(--sun-minus);
+    }
+}

@@ -1,0 +1,22 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    color: var(--text-primary);
+}
+
+body {
+    background-color: var(--bg-primary);
+}
+
+/* Remove link decorations */
+a {
+    text-decoration: inherit;
+    color: inherit;
+}
+
+main {
+    padding-top: 16px;
+    padding-left: 8px;
+}

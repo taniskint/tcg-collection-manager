@@ -1,0 +1,50 @@
+/* Navigation styles */
+nav {
+    padding-left: 8px;
+    background-color: var(--bg-recessed);
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-header {
+    height: 64px;
+    display: flex;
+    align-items: center;
+}
+
+.nav-header a {
+    flex-grow: 1;
+}
+
+.show-links {
+    width: 64px;
+    height: 100%;
+    font-size: 2rem;
+    text-align: center;
+    line-height: 64px;
+}
+
+.show-links:hover {
+    background-color: var(--bg-elevated);
+    cursor: pointer;
+}
+
+.nav-links {
+    list-style-type: none;
+}
+
+nav li:hover {
+    background-color: var(--bg-elevated);
+}
+
+nav li a,
+nav li button {
+    display: block;
+    width: 100%;
+    padding: 8px 0;
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: inherit;
+    cursor: pointer;
+}

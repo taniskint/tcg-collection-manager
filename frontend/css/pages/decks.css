@@ -1,0 +1,95 @@
+/* Decks container */
+.decks-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+/* Collection group - groups decks by collection */
+.collection-group {
+    margin-bottom: 32px;
+}
+
+.collection-group-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.collection-group-header img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.collection-group-header h2 {
+    color: var(--text-emphasis);
+    font-size: 1.25rem;
+    margin: 0;
+}
+
+.collection-group-header .game-name {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+/* Decks grid within each group */
+.decks-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* Deck card styling */
+.deck-card {
+    display: flex;
+    flex-direction: column;
+    width: 200px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: var(--bg-elevated);
+    transition: box-shadow 0.1s linear;
+}
+
+.deck-card:hover {
+    box-shadow: 0 0 8px var(--border);
+}
+
+.deck-card h3 {
+    color: var(--text-emphasis);
+    font-size: 1rem;
+    margin-bottom: 8px;
+}
+
+.deck-meta {
+    font-size: 0.8rem;
+    color: var(--text-primary);
+}
+
+.deck-meta p {
+    margin-bottom: 4px;
+}
+
+.deck-meta p:last-child {
+    margin-bottom: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .decks-grid {
+        justify-content: center;
+    }
+
+    .deck-card {
+        width: 100%;
+        max-width: 280px;
+    }
+
+    .collection-group-header {
+        flex-wrap: wrap;
+    }
+}

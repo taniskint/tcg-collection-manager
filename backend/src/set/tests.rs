@@ -22,10 +22,11 @@ fn create_game(client: &Client, name: &str) -> i64 {
 }
 
 fn create_set(client: &Client, game_id: i64, name: &str, image_url: Option<&str>) -> Value {
-    let body = match image_url {
-        Some(url) => json!({ "name": name, "image_url": url }),
-        None => json!({ "name": name }),
-    };
+    let mut body = json!({ "name": name, "publish_date": "2024-01-15" });
+
+    if let Some(url) = image_url {
+        body["image_url"] = json!(url);
+    }
 
     let response = client
         .post(format!("/api/games/{}/sets", game_id))
@@ -51,7 +52,7 @@ fn test_create_set_success() {
         .post(format!("/api/games/{}/sets", game_id))
         .header(ContentType::JSON)
         .header(Header::new("Authorization", admin_auth_header()))
-        .body(json!({ "name": "Shrouded Fable" }).to_string())
+        .body(json!({ "name": "Shrouded Fable", "publish_date": "2024-08-02" }).to_string())
         .dispatch();
 
     assert_eq!(response.status(), Status::Ok);
@@ -73,7 +74,8 @@ fn test_create_set_with_image_url() {
         .body(
             json!({
                 "name": "Shrouded Fable",
-                "image_url": "https://example.com/shrouded-fable.png"
+                "image_url": "https://example.com/shrouded-fable.png",
+                "publish_date": "2024-08-02"
             })
             .to_string(),
         )
@@ -84,12 +86,13 @@ fn test_create_set_with_image_url() {
     let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
     let set_id = body["id"].as_i64().unwrap();
 
-    // Verify the set was created with the image URL
+    // Verify the set was created with the image URL and publish date
     let get_response = client
         .get(format!("/api/games/{}/sets/{}", game_id, set_id))
         .dispatch();
     let set: Value = serde_json::from_str(&get_response.into_string().unwrap()).unwrap();
     assert_eq!(set["image_url"], "https://example.com/shrouded-fable.png");
+    assert_eq!(set["publish_date"], "2024-08-02");
 }
 
 #[test]
@@ -100,7 +103,7 @@ fn test_create_set_game_not_found() {
         .post("/api/games/99999/sets")
         .header(ContentType::JSON)
         .header(Header::new("Authorization", admin_auth_header()))
-        .body(json!({ "name": "Shrouded Fable" }).to_string())
+        .body(json!({ "name": "Shrouded Fable", "publish_date": "2024-08-02" }).to_string())
         .dispatch();
 
     assert_eq!(response.status(), Status::NotFound);
@@ -122,7 +125,7 @@ fn test_create_set_duplicate_name_same_game() {
         .post(format!("/api/games/{}/sets", game_id))
         .header(ContentType::JSON)
         .header(Header::new("Authorization", admin_auth_header()))
-        .body(json!({ "name": "Shrouded Fable" }).to_string())
+        .body(json!({ "name": "Shrouded Fable", "publish_date": "2024-08-02" }).to_string())
         .dispatch();
 
     assert_eq!(response.status(), Status::Conflict);
@@ -145,7 +148,7 @@ fn test_create_set_same_name_different_games() {
         .post(format!("/api/games/{}/sets", game2_id))
         .header(ContentType::JSON)
         .header(Header::new("Authorization", admin_auth_header()))
-        .body(json!({ "name": "Base Set" }).to_string())
+        .body(json!({ "name": "Base Set", "publish_date": "1999-01-09" }).to_string())
         .dispatch();
 
     assert_eq!(response.status(), Status::Ok);
@@ -159,7 +162,7 @@ fn test_create_set_without_auth() {
     let response = client
         .post(format!("/api/games/{}/sets", game_id))
         .header(ContentType::JSON)
-        .body(json!({ "name": "Shrouded Fable" }).to_string())
+        .body(json!({ "name": "Shrouded Fable", "publish_date": "2024-08-02" }).to_string())
         .dispatch();
 
     assert_eq!(response.status(), Status::Unauthorized);
@@ -191,6 +194,7 @@ fn test_get_set_success() {
     assert_eq!(body["id"], set_id);
     assert_eq!(body["name"], "Shrouded Fable");
     assert_eq!(body["image_url"], "https://example.com/sf.png");
+    assert_eq!(body["publish_date"], "2024-01-15");
 }
 
 #[test]

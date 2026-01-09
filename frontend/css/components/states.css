@@ -1,0 +1,56 @@
+/* Loading, error, and empty state patterns */
+.state-loading,
+.state-error,
+.state-empty {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 32px 16px;
+    text-align: center;
+}
+
+.state-error .btn {
+    margin-top: 16px;
+}
+
+.state-empty {
+    background-color: var(--bg-recessed);
+    border-radius: 8px;
+}
+
+/* Legacy class names for backwards compatibility */
+.collection-loading,
+.collection-error,
+.collections-loading,
+.collections-error,
+.deck-loading,
+.deck-error,
+.decks-loading,
+.decks-error,
+.cards-loading,
+.cards-error {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 32px 16px;
+    text-align: center;
+}
+
+.collection-error .btn,
+.collections-error .btn,
+.deck-error .btn,
+.decks-error .btn,
+.cards-error .btn {
+    margin-top: 16px;
+}
+
+.cards-empty,
+.collection-empty,
+.collections-empty,
+.deck-empty,
+.decks-empty {
+    max-width: calc(1000px - 32px);
+    margin: 0 auto;
+    padding: 32px 16px;
+    text-align: center;
+    background-color: var(--bg-recessed);
+    border-radius: 8px;
+}

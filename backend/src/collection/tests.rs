@@ -62,12 +62,12 @@ fn create_game(client: &Client, name: &str) -> i64 {
     body["id"].as_i64().unwrap()
 }
 
-fn create_set(client: &Client, game_id: i64, name: &str, code: &str) -> i64 {
+fn create_set(client: &Client, game_id: i64, name: &str, _code: &str) -> i64 {
     let response = client
         .post(format!("/api/games/{}/sets", game_id))
         .header(ContentType::JSON)
         .header(Header::new("Authorization", admin_auth_header()))
-        .body(json!({ "name": name, "code": code }).to_string())
+        .body(json!({ "name": name, "publish_date": "2024-01-15" }).to_string())
         .dispatch();
 
     assert_eq!(response.status(), Status::Ok);
@@ -801,4 +801,243 @@ fn test_collection_card_count_updates() {
         .dispatch();
     let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
     assert_eq!(body["card_count"], 3);
+}
+
+// ============================================================================
+// PATCH /api/collections/<id> (Update Collection)
+// ============================================================================
+
+#[test]
+fn test_update_collection_success() {
+    let client = create_test_client();
+    create_user(&client, "testuser", "test@example.com", "password123");
+    let session_id = login(&client, "testuser", "password123");
+    let game_id = create_game(&client, "Pokemon TCG");
+    let collection_id = create_collection(&client, &session_id, game_id, "My Collection");
+
+    let response = client
+        .patch(format!("/api/collections/{}", collection_id))
+        .header(ContentType::JSON)
+        .cookie(Cookie::new("session_id", session_id.clone()))
+        .body(json!({ "name": "Renamed Collection" }).to_string())
+        .dispatch();
+
+    assert_eq!(response.status(), Status::NoContent);
+
+    // Verify the name was updated
+    let get_response = client
+        .get(format!("/api/collections/{}", collection_id))
+        .cookie(Cookie::new("session_id", session_id))
+        .dispatch();
+
+    let body: Value = serde_json::from_str(&get_response.into_string().unwrap()).unwrap();
+    assert_eq!(body["name"], "Renamed Collection");
+}
+
+#[test]
+fn test_update_collection_without_auth() {
+    let client = create_test_client();
+
+    let response = client
+        .patch("/api/collections/1")
+        .header(ContentType::JSON)
+        .body(json!({ "name": "New Name" }).to_string())
+        .dispatch();
+
+    assert_eq!(response.status(), Status::Unauthorized);
+}
+
+#[test]
+fn test_update_collection_not_found() {
+    let client = create_test_client();
+    create_user(&client, "testuser", "test@example.com", "password123");
+    let session_id = login(&client, "testuser", "password123");
+
+    let response = client
+        .patch("/api/collections/99999")
+        .header(ContentType::JSON)
+        .cookie(Cookie::new("session_id", session_id))
+        .body(json!({ "name": "New Name" }).to_string())
+        .dispatch();
+
+    assert_eq!(response.status(), Status::NotFound);
+
+    let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
+    assert_eq!(body["error"], "Collection not found");
+}
+
+#[test]
+fn test_update_collection_not_owner() {
+    let client = create_test_client();
+    let game_id = create_game(&client, "Pokemon TCG");
+
+    // Create user 1 with a collection
+    create_user(&client, "user1", "user1@example.com", "password123");
+    let session1 = login(&client, "user1", "password123");
+    let collection_id = create_collection(&client, &session1, game_id, "User1 Collection");
+
+    // Create user 2 and try to update user 1's collection
+    create_user(&client, "user2", "user2@example.com", "password123");
+    let session2 = login(&client, "user2", "password123");
+
+    let response = client
+        .patch(format!("/api/collections/{}", collection_id))
+        .header(ContentType::JSON)
+        .cookie(Cookie::new("session_id", session2))
+        .body(json!({ "name": "Hacked Name" }).to_string())
+        .dispatch();
+
+    assert_eq!(response.status(), Status::Forbidden);
+
+    let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
+    assert_eq!(body["error"], "Access denied");
+}
+
+// ============================================================================
+// DELETE /api/collections/<id> (Delete Collection)
+// ============================================================================
+
+#[test]
+fn test_delete_collection_success() {
+    let client = create_test_client();
+    create_user(&client, "testuser", "test@example.com", "password123");
+    let session_id = login(&client, "testuser", "password123");
+    let game_id = create_game(&client, "Pokemon TCG");
+    let collection_id = create_collection(&client, &session_id, game_id, "My Collection");
+
+    let response = client
+        .delete(format!("/api/collections/{}", collection_id))
+        .cookie(Cookie::new("session_id", session_id.clone()))
+        .dispatch();
+
+    assert_eq!(response.status(), Status::NoContent);
+
+    // Verify the collection was deleted
+    let get_response = client
+        .get(format!("/api/collections/{}", collection_id))
+        .cookie(Cookie::new("session_id", session_id))
+        .dispatch();
+
+    assert_eq!(get_response.status(), Status::NotFound);
+}
+
+#[test]
+fn test_delete_collection_without_auth() {
+    let client = create_test_client();
+
+    let response = client.delete("/api/collections/1").dispatch();
+
+    assert_eq!(response.status(), Status::Unauthorized);
+}
+
+#[test]
+fn test_delete_collection_not_found() {
+    let client = create_test_client();
+    create_user(&client, "testuser", "test@example.com", "password123");
+    let session_id = login(&client, "testuser", "password123");
+
+    let response = client
+        .delete("/api/collections/99999")
+        .cookie(Cookie::new("session_id", session_id))
+        .dispatch();
+
+    assert_eq!(response.status(), Status::NotFound);
+
+    let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
+    assert_eq!(body["error"], "Collection not found");
+}
+
+#[test]
+fn test_delete_collection_not_owner() {
+    let client = create_test_client();
+    let game_id = create_game(&client, "Pokemon TCG");
+
+    // Create user 1 with a collection
+    create_user(&client, "user1", "user1@example.com", "password123");
+    let session1 = login(&client, "user1", "password123");
+    let collection_id = create_collection(&client, &session1, game_id, "User1 Collection");
+
+    // Create user 2 and try to delete user 1's collection
+    create_user(&client, "user2", "user2@example.com", "password123");
+    let session2 = login(&client, "user2", "password123");
+
+    let response = client
+        .delete(format!("/api/collections/{}", collection_id))
+        .cookie(Cookie::new("session_id", session2))
+        .dispatch();
+
+    assert_eq!(response.status(), Status::Forbidden);
+
+    let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
+    assert_eq!(body["error"], "Access denied");
+}
+
+#[test]
+fn test_delete_collection_with_cards() {
+    let client = create_test_client();
+    create_user(&client, "testuser", "test@example.com", "password123");
+    let session_id = login(&client, "testuser", "password123");
+    let game_id = create_game(&client, "Pokemon TCG");
+    let set_id = create_set(&client, game_id, "Base Set", "BS");
+    let card_ids = create_cards(&client, game_id, set_id, vec![("Pikachu", "025")]);
+    let collection_id = create_collection(&client, &session_id, game_id, "My Collection");
+
+    // Add a card to the collection
+    client
+        .patch(format!("/api/collections/{}/cards", collection_id))
+        .header(ContentType::JSON)
+        .cookie(Cookie::new("session_id", session_id.clone()))
+        .body(json!([{ "card_id": card_ids[0], "quantity": 3 }]).to_string())
+        .dispatch();
+
+    // Delete should still work and cascade to collection_cards
+    let response = client
+        .delete(format!("/api/collections/{}", collection_id))
+        .cookie(Cookie::new("session_id", session_id.clone()))
+        .dispatch();
+
+    assert_eq!(response.status(), Status::NoContent);
+
+    // Verify the collection was deleted
+    let get_response = client
+        .get(format!("/api/collections/{}", collection_id))
+        .cookie(Cookie::new("session_id", session_id))
+        .dispatch();
+
+    assert_eq!(get_response.status(), Status::NotFound);
+}
+
+#[test]
+fn test_delete_collection_removes_from_list() {
+    let client = create_test_client();
+    create_user(&client, "testuser", "test@example.com", "password123");
+    let session_id = login(&client, "testuser", "password123");
+    let game_id = create_game(&client, "Pokemon TCG");
+
+    // Create two collections
+    let collection1_id = create_collection(&client, &session_id, game_id, "Collection 1");
+    let _collection2_id = create_collection(&client, &session_id, game_id, "Collection 2");
+
+    // Verify we have 2 collections
+    let list_response = client
+        .get("/api/collections")
+        .cookie(Cookie::new("session_id", session_id.clone()))
+        .dispatch();
+    let body: Value = serde_json::from_str(&list_response.into_string().unwrap()).unwrap();
+    assert_eq!(body.as_array().unwrap().len(), 2);
+
+    // Delete one
+    client
+        .delete(format!("/api/collections/{}", collection1_id))
+        .cookie(Cookie::new("session_id", session_id.clone()))
+        .dispatch();
+
+    // Verify we have 1 collection
+    let list_response = client
+        .get("/api/collections")
+        .cookie(Cookie::new("session_id", session_id))
+        .dispatch();
+    let body: Value = serde_json::from_str(&list_response.into_string().unwrap()).unwrap();
+    assert_eq!(body.as_array().unwrap().len(), 1);
+    assert_eq!(body[0]["name"], "Collection 2");
 }

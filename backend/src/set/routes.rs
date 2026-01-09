@@ -9,6 +9,7 @@ use crate::{AdminAuth, DbConn, ErrorResponse};
 pub struct CreateSetRequest {
     name: String,
     image_url: Option<String>,
+    publish_date: String,
 }
 
 #[derive(Serialize)]
@@ -21,6 +22,7 @@ pub struct SetListItem {
     id: i64,
     name: String,
     image_url: Option<String>,
+    publish_date: String,
 }
 
 #[post("/<game_id>/sets", format = "json", data = "<req>")]
@@ -32,7 +34,7 @@ pub fn create(
 ) -> Result<Json<SetResponse>, (Status, Json<ErrorResponse>)> {
     let conn = db.0.lock().unwrap();
 
-    let id = super::create(&conn, game_id, &req.name, req.image_url.as_deref()).map_err(|e| {
+    let id = super::create(&conn, game_id, &req.name, req.image_url.as_deref(), &req.publish_date).map_err(|e| {
         let (status, error) = match e {
             super::CreateSetError::GameNotFound => (Status::NotFound, "Game not found"),
             super::CreateSetError::NameExists => {
@@ -69,6 +71,7 @@ pub fn get(
         id: set.id,
         name: set.name,
         image_url: set.image_url,
+        publish_date: set.publish_date,
     }))
 }
 
@@ -92,6 +95,7 @@ pub fn list(
             id: s.id,
             name: s.name,
             image_url: s.image_url,
+            publish_date: s.publish_date,
         })
         .collect();
 

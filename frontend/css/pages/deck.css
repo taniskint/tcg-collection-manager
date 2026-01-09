@@ -1,0 +1,51 @@
+/* Deck detail page - minimal overrides */
+
+/* Deck-specific metadata styling */
+.deck-meta {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+/* Collection quantity indicator in add-cards modal */
+.collection-qty {
+    font-size: 0.75rem;
+    color: var(--text-primary);
+    margin-left: 8px;
+}
+
+/* Modal filters layout for deck page */
+.modal-filters {
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.modal-attribute-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.modal-sorting {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal-sorting label {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .modal-attribute-filters {
+        flex-direction: column;
+    }
+
+    .modal-sorting {
+        flex-wrap: wrap;
+    }
+}

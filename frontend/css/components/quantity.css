@@ -1,0 +1,110 @@
+/* Quantity controls and add-cards modal content */
+.add-cards-search {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.add-cards-search .search-input {
+    flex: 1;
+}
+
+.add-cards-search .filter-select {
+    width: 180px;
+}
+
+.add-cards-results {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.add-card-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+}
+
+.add-card-image {
+    width: 40px;
+    height: 56px;
+    background-color: var(--bg-recessed);
+    border-radius: 2px;
+    flex-shrink: 0;
+    object-fit: cover;
+}
+
+.add-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.add-card-name {
+    font-weight: 500;
+    color: var(--text-emphasis);
+    margin-bottom: 2px;
+}
+
+.add-card-meta {
+    font-size: 0.8rem;
+    color: var(--text-primary);
+}
+
+.add-card-quantity {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.qty-btn {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background-color: var(--bg-elevated);
+    color: var(--text-primary);
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.1s linear;
+}
+
+.qty-btn:hover {
+    background-color: var(--bg-recessed);
+}
+
+.qty-input {
+    width: 40px;
+    text-align: center;
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.qty-input:focus {
+    outline: none;
+    border-color: var(--text-emphasis);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .add-cards-search {
+        flex-direction: column;
+    }
+
+    .add-cards-search .filter-select {
+        width: 100%;
+    }
+}

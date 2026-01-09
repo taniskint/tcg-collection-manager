@@ -177,6 +177,30 @@
         }
     }
 
+    async function updateCollectionName(collectionId: number, name: string): Promise<void> {
+        const response = await fetch(`/api/collections/${collectionId}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ name }),
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to update collection name");
+        }
+    }
+
+    async function deleteCollection(collectionId: number): Promise<void> {
+        const response = await fetch(`/api/collections/${collectionId}`, {
+            method: "DELETE",
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to delete collection");
+        }
+    }
+
     function formatDate(isoDate: string): string {
         const date = new Date(isoDate);
         return date.toLocaleDateString();
@@ -570,6 +594,98 @@
         }
     }
 
+    function showEditNameModal(): void {
+        const modal = document.getElementById("edit-name-modal");
+        const input = document.getElementById("new-collection-name") as HTMLInputElement;
+
+        if (modal && input && currentCollection) {
+            input.value = currentCollection.name;
+            modal.hidden = false;
+        }
+    }
+
+    function hideEditNameModal(): void {
+        const modal = document.getElementById("edit-name-modal");
+        if (modal) modal.hidden = true;
+    }
+
+    async function submitEditName(): Promise<void> {
+        if (!currentCollection) return;
+
+        const input = document.getElementById("new-collection-name") as HTMLInputElement;
+        const newName = input.value.trim();
+
+        if (!newName) {
+            alert("Please enter a collection name");
+            return;
+        }
+
+        try {
+            await updateCollectionName(currentCollection.id, newName);
+            currentCollection.name = newName;
+
+            // Update UI elements
+            const breadcrumbEl = document.getElementById("breadcrumb-collection");
+            const nameEl = document.getElementById("collection-name");
+            if (breadcrumbEl) breadcrumbEl.textContent = newName;
+            if (nameEl) nameEl.textContent = newName;
+            document.title = `${newName} - TCG Collection Manager`;
+
+            hideEditNameModal();
+        } catch (error) {
+            console.error("Error updating collection name:", error);
+            alert("Failed to update collection name. Please try again.");
+        }
+    }
+
+    async function handleDeleteCollection(): Promise<void> {
+        if (!currentCollection) return;
+
+        const confirmMessage = `Are you sure you want to delete "${currentCollection.name}"? This will also delete all decks in this collection. This action cannot be undone.`;
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+
+        try {
+            await deleteCollection(currentCollection.id);
+            window.location.href = "collections.html";
+        } catch (error) {
+            console.error("Error deleting collection:", error);
+            alert("Failed to delete collection. Please try again.");
+        }
+    }
+
+    function setupEditDeleteEventHandlers(): void {
+        const editNameBtn = document.getElementById("edit-name-btn");
+        const deleteCollectionBtn = document.getElementById("delete-collection-btn");
+        const editNameClose = document.getElementById("edit-name-close");
+        const editNameCancel = document.getElementById("edit-name-cancel");
+        const editNameForm = document.getElementById("edit-name-form");
+
+        if (editNameBtn) {
+            editNameBtn.addEventListener("click", showEditNameModal);
+        }
+
+        if (deleteCollectionBtn) {
+            deleteCollectionBtn.addEventListener("click", handleDeleteCollection);
+        }
+
+        if (editNameClose) {
+            editNameClose.addEventListener("click", hideEditNameModal);
+        }
+
+        if (editNameCancel) {
+            editNameCancel.addEventListener("click", hideEditNameModal);
+        }
+
+        if (editNameForm) {
+            editNameForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+                submitEditName();
+            });
+        }
+    }
+
     function setupModalEventHandlers(): void {
         const modal = document.getElementById("add-cards-modal");
         const addCardsBtn = document.getElementById("add-cards-btn");
@@ -760,6 +876,7 @@
             renderCardsGrid(sortCards(collectionCards));
             setupFilterEventHandlers();
             setupModalEventHandlers();
+            setupEditDeleteEventHandlers();
         } catch (error) {
             console.error("Error loading collection:", error);
             showError();

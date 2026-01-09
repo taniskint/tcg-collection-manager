@@ -1,0 +1,7 @@
+/* Collection detail page - minimal overrides */
+
+/* Collection-specific metadata styling */
+.collection-meta {
+    font-size: 0.85rem;
+    margin-top: 4px;
+}

@@ -67,7 +67,7 @@ fn create_set(client: &Client, game_id: i64, name: &str) -> i64 {
         .post(format!("/api/games/{}/sets", game_id))
         .header(ContentType::JSON)
         .header(Header::new("Authorization", admin_auth_header()))
-        .body(json!({ "name": name }).to_string())
+        .body(json!({ "name": name, "publish_date": "2024-01-15" }).to_string())
         .dispatch();
 
     assert_eq!(response.status(), Status::Ok);

@@ -52,6 +52,20 @@ pub enum UpdateDeckCardsError {
     DatabaseError,
 }
 
+#[derive(Debug)]
+pub enum UpdateDeckError {
+    NotFound,
+    NotOwner,
+    DatabaseError,
+}
+
+#[derive(Debug)]
+pub enum DeleteDeckError {
+    NotFound,
+    NotOwner,
+    DatabaseError,
+}
+
 pub fn init_table(conn: &Connection) -> Result<(), SqliteError> {
     conn.execute(
         "CREATE TABLE IF NOT EXISTS decks (
@@ -181,6 +195,79 @@ pub fn get(
         Err(rusqlite::Error::QueryReturnedNoRows) => Err(GetDeckError::NotFound),
         Err(_) => Err(GetDeckError::DatabaseError),
     }
+}
+
+pub fn update(
+    conn: &Connection,
+    deck_id: i64,
+    user_id: i64,
+    name: &str,
+) -> Result<(), UpdateDeckError> {
+    // First verify the deck exists and belongs to the user (via collection)
+    let owner_check: Result<i64, _> = conn.query_row(
+        "SELECT c.user_id FROM decks d
+         JOIN collections c ON d.collection_id = c.id
+         WHERE d.id = ?1",
+        params![deck_id],
+        |row| row.get(0),
+    );
+
+    match owner_check {
+        Ok(owner_id) => {
+            if owner_id != user_id {
+                return Err(UpdateDeckError::NotOwner);
+            }
+        }
+        Err(rusqlite::Error::QueryReturnedNoRows) => {
+            return Err(UpdateDeckError::NotFound);
+        }
+        Err(_) => {
+            return Err(UpdateDeckError::DatabaseError);
+        }
+    }
+
+    conn.execute(
+        "UPDATE decks SET name = ?1 WHERE id = ?2",
+        params![name, deck_id],
+    )
+    .map_err(|_| UpdateDeckError::DatabaseError)?;
+
+    Ok(())
+}
+
+pub fn delete(conn: &Connection, deck_id: i64, user_id: i64) -> Result<(), DeleteDeckError> {
+    // First verify the deck exists and belongs to the user (via collection)
+    let owner_check: Result<i64, _> = conn.query_row(
+        "SELECT c.user_id FROM decks d
+         JOIN collections c ON d.collection_id = c.id
+         WHERE d.id = ?1",
+        params![deck_id],
+        |row| row.get(0),
+    );
+
+    match owner_check {
+        Ok(owner_id) => {
+            if owner_id != user_id {
+                return Err(DeleteDeckError::NotOwner);
+            }
+        }
+        Err(rusqlite::Error::QueryReturnedNoRows) => {
+            return Err(DeleteDeckError::NotFound);
+        }
+        Err(_) => {
+            return Err(DeleteDeckError::DatabaseError);
+        }
+    }
+
+    // Delete associated deck_cards first
+    conn.execute("DELETE FROM deck_cards WHERE deck_id = ?1", params![deck_id])
+        .map_err(|_| DeleteDeckError::DatabaseError)?;
+
+    // Delete the deck
+    conn.execute("DELETE FROM decks WHERE id = ?1", params![deck_id])
+        .map_err(|_| DeleteDeckError::DatabaseError)?;
+
+    Ok(())
 }
 
 pub fn init_deck_cards_table(conn: &Connection) -> Result<(), SqliteError> {

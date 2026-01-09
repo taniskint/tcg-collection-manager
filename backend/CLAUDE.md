@@ -20,6 +20,9 @@ cargo test set::tests
 cargo test card::tests
 cargo test user::tests
 cargo test session::tests
+cargo test collection::tests
+cargo test deck::tests
+cargo test booster::tests
 
 # Lint
 cargo clippy
@@ -34,10 +37,11 @@ cargo fmt
 - **Framework**: Rocket 0.5.1 with JSON support
 - **Database**: SQLite via rusqlite (bundled)
 - **Auth**: bcrypt for passwords, UUID v4 for sessions, Bearer token for admin
+- **Randomness**: rand crate for booster pack opening
 
 ### Module Structure
 
-Each entity (game, set, card, user, session) lives in `src/<entity>/` with:
+Each entity (game, set, card, user, session, collection, deck, booster) lives in `src/<entity>/` with:
 - `mod.rs` - Re-exports and module glue
 - `model.rs` - Database operations, takes `&Connection` directly
 - `routes.rs` - HTTP handlers using `State<DbConn>`, converts model errors to HTTP status
@@ -47,14 +51,18 @@ Each entity (game, set, card, user, session) lives in `src/<entity>/` with:
 
 - `DbConn(Mutex<Connection>)` - Thread-safe database connection wrapper
 - `AdminAuth` - Request guard for admin-only endpoints (checks Bearer token)
+- `SessionAuth` - Request guard for user endpoints (checks session_id cookie)
 - `Config` - Loaded from `config.toml`, contains `admin_api_key`
 
 ### Route Mounting
 
 Routes are mounted in `build_rocket()` in `src/main.rs`:
 - `/api/users` - User registration
-- `/api/sessions` - Login/logout
-- `/api/games` - Games CRUD + sets + cards (nested paths)
+- `/api/sessions` - Login/logout/validate
+- `/api/games` - Games CRUD + sets + cards + boosters (nested paths)
+- `/api/collections` - User collections (requires session)
+- `/api/decks` - User decks (requires session)
+- `/api/boosters` - Open booster packs (requires session)
 - `/` - Static files served from `../frontend` (using Rocket's FileServer)
 
 ### Testing Pattern

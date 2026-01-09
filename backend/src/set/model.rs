@@ -4,6 +4,7 @@ pub struct Set {
     pub id: i64,
     pub name: String,
     pub image_url: Option<String>,
+    pub publish_date: String,
 }
 
 #[derive(Debug)]
@@ -18,6 +19,7 @@ pub fn create(
     game_id: i64,
     name: &str,
     image_url: Option<&str>,
+    publish_date: &str,
 ) -> Result<i64, CreateSetError> {
     // Verify the game exists
     let game_exists: bool = conn
@@ -33,8 +35,8 @@ pub fn create(
     }
 
     conn.execute(
-        "INSERT INTO sets (game_id, name, image_url) VALUES (?1, ?2, ?3)",
-        params![game_id, name, image_url],
+        "INSERT INTO sets (game_id, name, image_url, publish_date) VALUES (?1, ?2, ?3, ?4)",
+        params![game_id, name, image_url, publish_date],
     )
     .map_err(|e| {
         if let SqliteError::SqliteFailure(err, _) = &e
@@ -51,7 +53,7 @@ pub fn create(
 // TODO: Add card_count field when that feature is implemented
 pub fn get(conn: &Connection, game_id: i64, set_id: i64) -> Result<Option<Set>, SqliteError> {
     let mut stmt =
-        conn.prepare("SELECT id, name, image_url FROM sets WHERE game_id = ?1 AND id = ?2")?;
+        conn.prepare("SELECT id, name, image_url, publish_date FROM sets WHERE game_id = ?1 AND id = ?2")?;
 
     let mut rows = stmt.query(params![game_id, set_id])?;
     match rows.next()? {
@@ -59,19 +61,21 @@ pub fn get(conn: &Connection, game_id: i64, set_id: i64) -> Result<Option<Set>, 
             id: row.get(0)?,
             name: row.get(1)?,
             image_url: row.get(2)?,
+            publish_date: row.get(3)?,
         })),
         None => Ok(None),
     }
 }
 
 pub fn list(conn: &Connection, game_id: i64) -> Result<Vec<Set>, SqliteError> {
-    let mut stmt = conn.prepare("SELECT id, name, image_url FROM sets WHERE game_id = ?1")?;
+    let mut stmt = conn.prepare("SELECT id, name, image_url, publish_date FROM sets WHERE game_id = ?1")?;
     let sets = stmt
         .query_map(params![game_id], |row| {
             Ok(Set {
                 id: row.get(0)?,
                 name: row.get(1)?,
                 image_url: row.get(2)?,
+                publish_date: row.get(3)?,
             })
         })?
         .collect::<Result<Vec<_>, _>>()?;
@@ -86,6 +90,7 @@ pub fn init_table(conn: &Connection) -> Result<(), SqliteError> {
             game_id INTEGER NOT NULL,
             name TEXT NOT NULL,
             image_url TEXT,
+            publish_date TEXT NOT NULL,
             FOREIGN KEY (game_id) REFERENCES games(id),
             UNIQUE(game_id, name)
         )",

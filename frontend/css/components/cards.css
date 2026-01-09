@@ -1,0 +1,97 @@
+/* Card grid and chiclet styles */
+.cards-grid {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 16px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+}
+
+.cards-grid-wide {
+    max-width: 1200px;
+}
+
+.card-chiclet {
+    display: flex;
+    flex-direction: column;
+    width: 140px;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: var(--bg-elevated);
+    transition: box-shadow 0.1s linear, transform 0.1s linear;
+    text-decoration: none;
+}
+
+.card-chiclet:hover {
+    box-shadow: 0 0 8px var(--border);
+    transform: translateY(-2px);
+}
+
+.card-image-wrapper {
+    position: relative;
+}
+
+.card-image {
+    width: 100%;
+    aspect-ratio: 63 / 88;
+    border-radius: 4px;
+    background-color: var(--bg-recessed);
+    object-fit: cover;
+}
+
+.quantity-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background-color: var(--text-emphasis);
+    color: var(--bg-primary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+}
+
+.card-info {
+    padding-top: 8px;
+    text-align: center;
+}
+
+.card-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-emphasis);
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-number {
+    font-size: 0.75rem;
+    color: var(--text-primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .cards-grid {
+        gap: 12px;
+    }
+
+    .card-chiclet {
+        width: 120px;
+    }
+
+    .card-name {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .card-chiclet {
+        width: calc(50% - 8px);
+        min-width: 100px;
+    }
+}

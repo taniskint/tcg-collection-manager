@@ -1,0 +1,63 @@
+/* Sorting section */
+.sorting-section {
+    max-width: 1000px;
+    margin: 0 auto 16px;
+    padding: 0 16px;
+}
+
+.sorting-rows {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+.sort-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sort-group label {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.sort-group .filter-select {
+    min-width: 120px;
+}
+
+.order-select {
+    min-width: 70px !important;
+    width: 70px;
+}
+
+.sort-add,
+.sort-remove {
+    flex-shrink: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sorting-rows {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .sort-group {
+        width: 100%;
+    }
+
+    .sort-group label {
+        min-width: 60px;
+    }
+
+    .sort-group .filter-select {
+        flex: 1;
+    }
+
+    .order-select {
+        flex: 0 0 70px !important;
+    }
+}

@@ -48,6 +48,11 @@ pub struct CardQuantityUpdateRequest {
     quantity: i64,
 }
 
+#[derive(Deserialize)]
+pub struct UpdateDeckRequest {
+    name: String,
+}
+
 #[post("/", format = "json", data = "<req>")]
 pub fn create(
     auth: SessionAuth,
@@ -208,6 +213,51 @@ pub fn update_cards(
     Ok(Status::NoContent)
 }
 
+#[patch("/<deck_id>", format = "json", data = "<req>")]
+pub fn update(
+    auth: SessionAuth,
+    db: &State<DbConn>,
+    deck_id: i64,
+    req: Json<UpdateDeckRequest>,
+) -> Result<Status, (Status, Json<ErrorResponse>)> {
+    let conn = db.0.lock().unwrap();
+
+    super::update(&conn, deck_id, auth.0.id, &req.name).map_err(|e| {
+        let (status, error) = match e {
+            super::UpdateDeckError::NotFound => (Status::NotFound, "Deck not found"),
+            super::UpdateDeckError::NotOwner => (Status::Forbidden, "Access denied"),
+            super::UpdateDeckError::DatabaseError => {
+                (Status::InternalServerError, "Failed to update deck")
+            }
+        };
+        (status, Json(ErrorResponse::new(error)))
+    })?;
+
+    Ok(Status::NoContent)
+}
+
+#[delete("/<deck_id>")]
+pub fn delete(
+    auth: SessionAuth,
+    db: &State<DbConn>,
+    deck_id: i64,
+) -> Result<Status, (Status, Json<ErrorResponse>)> {
+    let conn = db.0.lock().unwrap();
+
+    super::delete(&conn, deck_id, auth.0.id).map_err(|e| {
+        let (status, error) = match e {
+            super::DeleteDeckError::NotFound => (Status::NotFound, "Deck not found"),
+            super::DeleteDeckError::NotOwner => (Status::Forbidden, "Access denied"),
+            super::DeleteDeckError::DatabaseError => {
+                (Status::InternalServerError, "Failed to delete deck")
+            }
+        };
+        (status, Json(ErrorResponse::new(error)))
+    })?;
+
+    Ok(Status::NoContent)
+}
+
 pub fn routes() -> Vec<rocket::Route> {
-    routes![create, list, get, list_cards, update_cards]
+    routes![create, list, get, list_cards, update_cards, update, delete]
 }

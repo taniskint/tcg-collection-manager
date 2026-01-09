@@ -1,0 +1,59 @@
+/* Common button styles */
+.btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.1s linear, box-shadow 0.1s linear;
+}
+
+.btn-primary {
+    background-color: var(--text-emphasis);
+    color: var(--bg-primary);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 0 8px var(--border);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+    background-color: var(--bg-recessed);
+}
+
+.btn-large {
+    padding: 12px 32px;
+    font-size: 1.1rem;
+}
+
+.btn-full {
+    width: 100%;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn:disabled:hover {
+    box-shadow: none;
+}
+
+.btn-icon {
+    padding: 6px 10px;
+    font-size: 1rem;
+    background-color: transparent;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.1s linear;
+}
+
+.btn-icon:hover {
+    background-color: var(--bg-recessed);
+}

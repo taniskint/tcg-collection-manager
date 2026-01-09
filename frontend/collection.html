@@ -4,8 +4,23 @@
     <meta charset="UTF-8">
     <title>Collection - TCG Collection Manager</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="collection.css">
+    <!-- Core styles -->
+    <link rel="stylesheet" href="css/core/variables.css">
+    <link rel="stylesheet" href="css/core/reset.css">
+    <link rel="stylesheet" href="css/navigation/nav.css">
+    <!-- Components -->
+    <link rel="stylesheet" href="css/components/buttons.css">
+    <link rel="stylesheet" href="css/components/breadcrumb.css">
+    <link rel="stylesheet" href="css/components/page-header.css">
+    <link rel="stylesheet" href="css/components/cards.css">
+    <link rel="stylesheet" href="css/components/filters.css">
+    <link rel="stylesheet" href="css/components/sorting.css">
+    <link rel="stylesheet" href="css/components/modal.css">
+    <link rel="stylesheet" href="css/components/forms.css">
+    <link rel="stylesheet" href="css/components/quantity.css">
+    <link rel="stylesheet" href="css/components/states.css">
+    <!-- Page-specific -->
+    <link rel="stylesheet" href="css/pages/collection.css">
 </head>
 <body>
     <nav>
@@ -38,6 +53,8 @@
                         <p class="collection-meta"><span id="stat-cards">0</span> cards · Created <span id="stat-created"></span></p>
                     </div>
                     <div class="page-header-actions">
+                        <button class="btn btn-secondary" id="edit-name-btn">Edit Name</button>
+                        <button class="btn btn-secondary" id="delete-collection-btn">Delete</button>
                         <button class="btn btn-primary" id="add-cards-btn">+ Add Cards</button>
                     </div>
                 </div>
@@ -96,6 +113,26 @@
             <a href="collections.html" class="btn btn-secondary">Return to Collections</a>
         </div>
     </main>
+
+    <!-- Edit Name Modal -->
+    <div id="edit-name-modal" class="modal" hidden>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Collection Name</h2>
+                <button type="button" class="modal-close" id="edit-name-close">&times;</button>
+            </div>
+            <form id="edit-name-form">
+                <div class="form-group">
+                    <label for="new-collection-name">Collection Name</label>
+                    <input type="text" id="new-collection-name" name="new-collection-name" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="edit-name-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Add Cards Modal -->
     <div class="modal-overlay" id="add-cards-modal" hidden>

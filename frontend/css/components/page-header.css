@@ -1,0 +1,92 @@
+/* Page header with card styling */
+.page-header {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px 16px 16px;
+}
+
+.page-header-card {
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.page-header-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.page-header-logo {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+}
+
+.page-header-logo-large {
+    width: 80px;
+    height: 80px;
+}
+
+.page-header-text {
+    flex: 1;
+}
+
+.page-header-text h1 {
+    color: var(--text-emphasis);
+    margin-bottom: 4px;
+}
+
+.page-header-actions {
+    flex-shrink: 0;
+}
+
+/* Page header row variant (for list pages) */
+.page-header-row {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px 16px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.page-header-row h1 {
+    color: var(--text-emphasis);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .page-header-content {
+        flex-wrap: wrap;
+    }
+
+    .page-header-actions {
+        width: 100%;
+        margin-top: 12px;
+    }
+
+    .page-header-actions .btn {
+        width: 100%;
+    }
+
+    .page-header-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .page-header-logo {
+        width: 48px;
+        height: 48px;
+    }
+}

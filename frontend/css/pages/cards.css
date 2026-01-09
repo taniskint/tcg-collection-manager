@@ -1,0 +1,96 @@
+/* Cards page - uses wide container */
+.cards-grid {
+    max-width: 1200px;
+}
+
+/* Pack results modal styles */
+.modal-xl {
+    max-width: 90vw;
+    width: 900px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-xl .modal-body {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.pack-results-body {
+    padding: 16px;
+}
+
+.pack-results-info {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--bg-recessed);
+    color: var(--text-primary);
+}
+
+.pack-results-info strong {
+    color: var(--text-emphasis);
+}
+
+.pack-results-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+}
+
+.pack-card {
+    display: flex;
+    flex-direction: column;
+    width: 110px;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: var(--bg-primary);
+}
+
+.pack-card-image {
+    width: 100%;
+    aspect-ratio: 63 / 88;
+    border-radius: 4px;
+    background-color: var(--bg-recessed);
+    object-fit: cover;
+}
+
+.pack-card-info {
+    padding-top: 8px;
+    text-align: center;
+}
+
+.pack-card-name {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-emphasis);
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pack-card-meta {
+    font-size: 0.65rem;
+    color: var(--text-primary);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .pack-card {
+        width: 90px;
+    }
+
+    .pack-card-name {
+        font-size: 0.65rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .pack-card {
+        width: calc(50% - 8px);
+        min-width: 80px;
+    }
+}

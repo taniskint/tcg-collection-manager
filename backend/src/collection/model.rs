@@ -51,6 +51,20 @@ pub enum UpdateCollectionCardsError {
     DatabaseError,
 }
 
+#[derive(Debug)]
+pub enum UpdateCollectionError {
+    NotFound,
+    NotOwner,
+    DatabaseError,
+}
+
+#[derive(Debug)]
+pub enum DeleteCollectionError {
+    NotFound,
+    NotOwner,
+    DatabaseError,
+}
+
 pub fn create(
     conn: &Connection,
     user_id: i64,
@@ -152,6 +166,88 @@ pub fn get(
         Err(rusqlite::Error::QueryReturnedNoRows) => Err(GetCollectionError::NotFound),
         Err(_) => Err(GetCollectionError::DatabaseError),
     }
+}
+
+pub fn update(
+    conn: &Connection,
+    id: i64,
+    user_id: i64,
+    name: &str,
+) -> Result<(), UpdateCollectionError> {
+    // First verify the collection exists and belongs to the user
+    let owner_check: Result<i64, _> = conn.query_row(
+        "SELECT user_id FROM collections WHERE id = ?1",
+        params![id],
+        |row| row.get(0),
+    );
+
+    match owner_check {
+        Ok(owner_id) => {
+            if owner_id != user_id {
+                return Err(UpdateCollectionError::NotOwner);
+            }
+        }
+        Err(rusqlite::Error::QueryReturnedNoRows) => {
+            return Err(UpdateCollectionError::NotFound);
+        }
+        Err(_) => {
+            return Err(UpdateCollectionError::DatabaseError);
+        }
+    }
+
+    conn.execute(
+        "UPDATE collections SET name = ?1 WHERE id = ?2",
+        params![name, id],
+    )
+    .map_err(|_| UpdateCollectionError::DatabaseError)?;
+
+    Ok(())
+}
+
+pub fn delete(conn: &Connection, id: i64, user_id: i64) -> Result<(), DeleteCollectionError> {
+    // First verify the collection exists and belongs to the user
+    let owner_check: Result<i64, _> = conn.query_row(
+        "SELECT user_id FROM collections WHERE id = ?1",
+        params![id],
+        |row| row.get(0),
+    );
+
+    match owner_check {
+        Ok(owner_id) => {
+            if owner_id != user_id {
+                return Err(DeleteCollectionError::NotOwner);
+            }
+        }
+        Err(rusqlite::Error::QueryReturnedNoRows) => {
+            return Err(DeleteCollectionError::NotFound);
+        }
+        Err(_) => {
+            return Err(DeleteCollectionError::DatabaseError);
+        }
+    }
+
+    // Delete associated collection_cards first (due to foreign key)
+    conn.execute(
+        "DELETE FROM collection_cards WHERE collection_id = ?1",
+        params![id],
+    )
+    .map_err(|_| DeleteCollectionError::DatabaseError)?;
+
+    // Delete associated decks (and their deck_cards)
+    conn.execute(
+        "DELETE FROM deck_cards WHERE deck_id IN (SELECT id FROM decks WHERE collection_id = ?1)",
+        params![id],
+    )
+    .map_err(|_| DeleteCollectionError::DatabaseError)?;
+
+    conn.execute("DELETE FROM decks WHERE collection_id = ?1", params![id])
+        .map_err(|_| DeleteCollectionError::DatabaseError)?;
+
+    // Delete the collection
+    conn.execute("DELETE FROM collections WHERE id = ?1", params![id])
+        .map_err(|_| DeleteCollectionError::DatabaseError)?;
+
+    Ok(())
 }
 
 pub fn init_table(conn: &Connection) -> Result<(), SqliteError> {

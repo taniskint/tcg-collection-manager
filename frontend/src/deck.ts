@@ -153,6 +153,30 @@
         }
     }
 
+    async function updateDeckName(deckId: number, name: string): Promise<void> {
+        const response = await fetch(`/api/decks/${deckId}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ name }),
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to update deck name");
+        }
+    }
+
+    async function deleteDeck(deckId: number): Promise<void> {
+        const response = await fetch(`/api/decks/${deckId}`, {
+            method: "DELETE",
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to delete deck");
+        }
+    }
+
     function formatDate(isoDate: string): string {
         const date = new Date(isoDate);
         return date.toLocaleDateString();
@@ -659,6 +683,98 @@
         }
     }
 
+    function showEditNameModal(): void {
+        const modal = document.getElementById("edit-name-modal");
+        const input = document.getElementById("new-deck-name") as HTMLInputElement;
+
+        if (modal && input && currentDeck) {
+            input.value = currentDeck.name;
+            modal.hidden = false;
+        }
+    }
+
+    function hideEditNameModal(): void {
+        const modal = document.getElementById("edit-name-modal");
+        if (modal) modal.hidden = true;
+    }
+
+    async function submitEditName(): Promise<void> {
+        if (!currentDeck) return;
+
+        const input = document.getElementById("new-deck-name") as HTMLInputElement;
+        const newName = input.value.trim();
+
+        if (!newName) {
+            alert("Please enter a deck name");
+            return;
+        }
+
+        try {
+            await updateDeckName(currentDeck.id, newName);
+            currentDeck.name = newName;
+
+            // Update UI elements
+            const breadcrumbEl = document.getElementById("breadcrumb-deck");
+            const nameEl = document.getElementById("deck-name");
+            if (breadcrumbEl) breadcrumbEl.textContent = newName;
+            if (nameEl) nameEl.textContent = newName;
+            document.title = `${newName} - TCG Collection Manager`;
+
+            hideEditNameModal();
+        } catch (error) {
+            console.error("Error updating deck name:", error);
+            alert("Failed to update deck name. Please try again.");
+        }
+    }
+
+    async function handleDeleteDeck(): Promise<void> {
+        if (!currentDeck) return;
+
+        const confirmMessage = `Are you sure you want to delete "${currentDeck.name}"? This action cannot be undone.`;
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+
+        try {
+            await deleteDeck(currentDeck.id);
+            window.location.href = "decks.html";
+        } catch (error) {
+            console.error("Error deleting deck:", error);
+            alert("Failed to delete deck. Please try again.");
+        }
+    }
+
+    function setupEditDeleteEventHandlers(): void {
+        const editNameBtn = document.getElementById("edit-name-btn");
+        const deleteDeckBtn = document.getElementById("delete-deck-btn");
+        const editNameClose = document.getElementById("edit-name-close");
+        const editNameCancel = document.getElementById("edit-name-cancel");
+        const editNameForm = document.getElementById("edit-name-form");
+
+        if (editNameBtn) {
+            editNameBtn.addEventListener("click", showEditNameModal);
+        }
+
+        if (deleteDeckBtn) {
+            deleteDeckBtn.addEventListener("click", handleDeleteDeck);
+        }
+
+        if (editNameClose) {
+            editNameClose.addEventListener("click", hideEditNameModal);
+        }
+
+        if (editNameCancel) {
+            editNameCancel.addEventListener("click", hideEditNameModal);
+        }
+
+        if (editNameForm) {
+            editNameForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+                submitEditName();
+            });
+        }
+    }
+
     function setupModalEventHandlers(): void {
         const modal = document.getElementById("add-cards-modal");
         const addCardsBtn = document.getElementById("add-cards-btn");
@@ -869,6 +985,7 @@
             renderCardsGrid(sortCards(deckCards));
             setupFilterEventHandlers();
             setupModalEventHandlers();
+            setupEditDeleteEventHandlers();
         } catch (error) {
             console.error("Error loading deck:", error);
             showError();
