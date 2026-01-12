@@ -10,6 +10,7 @@
         id: number;
         name: string;
         image_url: string | null;
+        publish_date: string;
     }
 
     function getSessionId(): string | null {
@@ -167,6 +168,11 @@
                 loadGame(gameId),
                 loadSets(gameId),
             ]);
+
+            // Sort sets by publish date (newest first)
+            sets.sort((a, b) => {
+                return new Date(b.publish_date).getTime() - new Date(a.publish_date).getTime();
+            });
 
             renderHeader(game);
             renderSets(sets, gameId);

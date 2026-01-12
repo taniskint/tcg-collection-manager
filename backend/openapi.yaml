@@ -61,6 +61,42 @@ components:
           format: int64
           example: 1
 
+    UpdateUserRequest:
+      type: object
+      required:
+        - current_password
+      properties:
+        username:
+          type: string
+          description: New username (optional)
+          example: "johndoe_updated"
+        email:
+          type: string
+          format: email
+          description: New email address (optional)
+          example: "newemail@example.com"
+        password:
+          type: string
+          format: password
+          description: New password (optional)
+          example: "newsecurepassword456"
+        current_password:
+          type: string
+          format: password
+          description: Current password for verification
+          example: "securepassword123"
+
+    DeleteUserRequest:
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          type: string
+          format: password
+          description: Current password for confirmation
+          example: "securepassword123"
+
     LoginRequest:
       type: object
       required:
@@ -707,6 +743,140 @@ paths:
                 emailExists:
                   value:
                     error: "Email already exists"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/users/{id}:
+    patch:
+      summary: Update user account
+      description: Update username, email, and/or password. Requires current password for verification.
+      operationId: updateUser
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: User ID
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '204':
+          description: User updated successfully
+        '400':
+          description: No fields provided to update
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "No fields to update"
+        '401':
+          description: Invalid current password or not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Invalid password"
+        '403':
+          description: Access denied - trying to update another user's account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Access denied"
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "User not found"
+        '409':
+          description: Username or email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                usernameExists:
+                  value:
+                    error: "Username already exists"
+                emailExists:
+                  value:
+                    error: "Email already exists"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Delete user account
+      description: Permanently delete user account and all associated data (collections, decks, sessions). Requires password confirmation.
+      operationId: deleteUser
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: User ID
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteUserRequest'
+      responses:
+        '204':
+          description: User deleted successfully
+        '401':
+          description: Invalid password or not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Invalid password"
+        '403':
+          description: Access denied - trying to delete another user's account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Access denied"
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "User not found"
         '500':
           description: Internal server error
           content:

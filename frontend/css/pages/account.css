@@ -1,0 +1,142 @@
+/* Account page layout */
+.account-loading,
+.account-error {
+    max-width: 600px;
+    margin: 40px auto;
+    text-align: center;
+    padding: 0 16px;
+}
+
+.account-error a {
+    margin-top: 16px;
+}
+
+.account-content {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 16px 40px;
+}
+
+/* Account sections */
+.account-section {
+    margin-bottom: 48px;
+    padding: 24px;
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.account-section h2 {
+    margin-bottom: 8px;
+    color: var(--text-emphasis);
+}
+
+.section-description {
+    margin-bottom: 24px;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    opacity: 0.8;
+}
+
+/* Account form */
+.account-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.account-form .form-group input[disabled] {
+    background-color: var(--bg-recessed);
+    color: var(--text-primary);
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Form divider */
+.form-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 8px 0;
+}
+
+/* Input hint */
+.input-hint {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    opacity: 0.7;
+    margin-top: 4px;
+}
+
+/* Success message */
+.form-success {
+    background-color: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    padding: 12px;
+    border-radius: 4px;
+    text-align: center;
+    display: none;
+}
+
+.form-success:not([hidden]) {
+    display: block;
+}
+
+/* Danger section */
+.danger-section {
+    border-color: rgba(220, 53, 69, 0.3);
+}
+
+.danger-section h2 {
+    color: #dc3545;
+}
+
+/* Danger button */
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.1s linear;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+/* Delete modal warnings */
+.warning-text {
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+
+.warning-list {
+    margin: 12px 0;
+    padding-left: 24px;
+}
+
+.warning-list li {
+    margin-bottom: 8px;
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+    .form-success {
+        background-color: rgba(72, 187, 120, 0.1);
+        color: #48bb78;
+    }
+
+    .danger-section h2 {
+        color: #f56565;
+    }
+
+    .btn-danger {
+        background-color: #f56565;
+    }
+
+    .btn-danger:hover {
+        background-color: #e53e3e;
+    }
+}
