@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate rocket;
 
+mod atlas;
 mod booster;
 mod card;
 mod collection;
@@ -25,12 +26,20 @@ use serde::{Deserialize, Serialize};
 #[derive(Deserialize, Clone)]
 pub struct Config {
     pub admin_api_key: String,
+    pub s3: Option<S3Config>,
+}
+
+#[derive(Deserialize, Clone)]
+pub struct S3Config {
+    pub bucket: String,
+    pub region: String,
 }
 
 impl Config {
     pub fn test_config(admin_api_key: &str) -> Self {
         Self {
             admin_api_key: admin_api_key.to_string(),
+            s3: None,
         }
     }
 }

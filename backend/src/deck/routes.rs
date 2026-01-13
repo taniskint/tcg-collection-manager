@@ -5,7 +5,7 @@ use rocket::http::Status;
 use rocket::serde::json::Json;
 use serde::{Deserialize, Serialize};
 
-use crate::{DbConn, ErrorResponse, SessionAuth};
+use crate::{Config, DbConn, ErrorResponse, SessionAuth};
 
 #[derive(Deserialize)]
 pub struct CreateDeckRequest {
@@ -258,6 +258,141 @@ pub fn delete(
     Ok(Status::NoContent)
 }
 
+#[derive(Serialize)]
+pub struct AtlasResponse {
+    url: String,
+    card_count: i64,
+}
+
+#[get("/<deck_id>/tabletop-simulator")]
+pub async fn generate_tabletop_simulator(
+    db: &State<DbConn>,
+    config: &State<Config>,
+    deck_id: i64,
+) -> Result<Json<Vec<AtlasResponse>>, (Status, Json<ErrorResponse>)> {
+    // 1. Fetch deck cards (sync DB operation, no auth required)
+    let deck_cards = {
+        let conn = db.0.lock().unwrap();
+        super::list_deck_cards_public(&conn, deck_id).map_err(|e| {
+            let (status, error) = match e {
+                super::GetDeckError::NotFound => (Status::NotFound, "Deck not found"),
+                super::GetDeckError::NotOwner => (Status::Forbidden, "Access denied"),
+                super::GetDeckError::DatabaseError => {
+                    (Status::InternalServerError, "Failed to get deck")
+                }
+            };
+            (status, Json(ErrorResponse::new(error)))
+        })?
+    };
+
+    // Validate deck is not empty
+    if deck_cards.is_empty() {
+        return Err((
+            Status::BadRequest,
+            Json(ErrorResponse::new("Deck is empty")),
+        ));
+    }
+
+    // Check S3 config
+    let s3_config = config.s3.as_ref().ok_or((
+        Status::ServiceUnavailable,
+        Json(ErrorResponse::new("S3 not configured")),
+    ))?;
+
+    // 2. Calculate deck hash
+    let deck_hash = crate::atlas::calculate_deck_hash(&deck_cards);
+
+    // 3. Check cache
+    let s3_client = crate::atlas::create_s3_client().await;
+    let total_cards: i64 = deck_cards.iter().map(|c| c.quantity).sum();
+    let atlas_count = ((total_cards as usize + 69) / 70).max(1);
+
+    let mut atlas_responses = Vec::new();
+    let mut cached = true;
+
+    for i in 0..atlas_count {
+        let key = crate::atlas::get_s3_key(deck_id, &deck_hash, i);
+        match crate::atlas::check_cache(&s3_client, &s3_config.bucket, &key).await {
+            Ok(Some(url)) => {
+                let cards_in_atlas = if i == atlas_count - 1 {
+                    ((total_cards - 1) % 70) + 1
+                } else {
+                    70
+                };
+                atlas_responses.push(AtlasResponse {
+                    url,
+                    card_count: cards_in_atlas,
+                });
+            }
+            _ => {
+                cached = false;
+                break;
+            }
+        }
+    }
+
+    if cached {
+        return Ok(Json(atlas_responses));
+    }
+
+    // 4. Generate atlases
+    let atlases = crate::atlas::generate_atlases(&deck_cards)
+        .await
+        .map_err(|e| {
+            eprintln!("Atlas generation error: {:?}", e);
+            (
+                Status::InternalServerError,
+                Json(ErrorResponse::new("Failed to generate atlases")),
+            )
+        })?;
+
+    // 5. Upload to S3
+    atlas_responses.clear();
+    for (i, atlas) in atlases.iter().enumerate() {
+        let key = crate::atlas::get_s3_key(deck_id, &deck_hash, i);
+
+        // Encode to PNG
+        let mut png_data = Vec::new();
+        let mut cursor = std::io::Cursor::new(&mut png_data);
+        atlas
+            .image
+            .write_to(&mut cursor, image::ImageFormat::Png)
+            .map_err(|e| {
+                eprintln!("PNG encoding error: {:?}", e);
+                (
+                    Status::InternalServerError,
+                    Json(ErrorResponse::new("Failed to encode atlas")),
+                )
+            })?;
+
+        let url = crate::atlas::upload_atlas(&s3_client, &s3_config.bucket, &key, png_data)
+            .await
+            .map_err(|e| {
+                eprintln!("S3 upload error: {:?}", e);
+                (
+                    Status::InternalServerError,
+                    Json(ErrorResponse::new("Failed to upload atlas")),
+                )
+            })?;
+
+        atlas_responses.push(AtlasResponse {
+            url,
+            card_count: atlas.card_count as i64,
+        });
+    }
+
+    Ok(Json(atlas_responses))
+}
+
 pub fn routes() -> Vec<rocket::Route> {
-    routes![create, list, get, list_cards, update_cards, update, delete]
+    routes![
+        create,
+        list,
+        get,
+        list_cards,
+        update_cards,
+        update,
+        delete,
+        generate_tabletop_simulator
+    ]
 }

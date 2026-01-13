@@ -1,1 +1,5 @@
 admin_api_key = "test-key"
+
+[s3]
+bucket = "test-tcg-tts-deck-atlases"
+region = "us-west-2"

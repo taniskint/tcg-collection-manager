@@ -133,3 +133,4 @@ pub fn delete(
 pub fn routes() -> Vec<rocket::Route> {
     routes![create, update, delete]
 }
+

@@ -352,6 +352,57 @@ pub fn list_deck_cards(
     Ok(cards)
 }
 
+/// List deck cards without ownership check (for public endpoints)
+pub fn list_deck_cards_public(
+    conn: &Connection,
+    deck_id: i64,
+) -> Result<Vec<DeckCard>, GetDeckError> {
+    // Check if deck exists
+    let deck_exists: bool = conn
+        .query_row(
+            "SELECT EXISTS(SELECT 1 FROM decks WHERE id = ?1)",
+            params![deck_id],
+            |row| row.get(0),
+        )
+        .unwrap_or(false);
+
+    if !deck_exists {
+        return Err(GetDeckError::NotFound);
+    }
+
+    // Get all cards in the deck with full details
+    let mut stmt = conn
+        .prepare(
+            "SELECT c.id, c.name, c.collector_number, c.image_url, c.attributes,
+                    s.id, s.name, dc.quantity
+             FROM deck_cards dc
+             JOIN cards c ON dc.card_id = c.id
+             JOIN sets s ON c.set_id = s.id
+             WHERE dc.deck_id = ?1
+             ORDER BY s.name, c.collector_number",
+        )
+        .map_err(|_| GetDeckError::DatabaseError)?;
+
+    let cards = stmt
+        .query_map(params![deck_id], |row| {
+            Ok(DeckCard {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                collector_number: row.get(2)?,
+                image_url: row.get(3)?,
+                attributes: deserialize_attributes(row.get(4)?),
+                set_id: row.get(5)?,
+                set_name: row.get(6)?,
+                quantity: row.get(7)?,
+            })
+        })
+        .map_err(|_| GetDeckError::DatabaseError)?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|_| GetDeckError::DatabaseError)?;
+
+    Ok(cards)
+}
+
 pub fn update_deck_cards(
     conn: &Connection,
     deck_id: i64,
