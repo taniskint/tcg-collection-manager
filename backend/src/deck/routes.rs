@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use rocket::State;
 use rocket::http::Status;
 use rocket::serde::json::Json;
+use rusqlite::params;
 use serde::{Deserialize, Serialize};
 
 use crate::{Config, DbConn, ErrorResponse, SessionAuth};
@@ -259,9 +260,16 @@ pub fn delete(
 }
 
 #[derive(Serialize)]
-pub struct AtlasResponse {
+pub struct AtlasSheet {
     url: String,
     card_count: i64,
+}
+
+#[derive(Serialize)]
+pub struct TabletopSimulatorResponse {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    card_back: Option<String>,
+    sheets: Vec<AtlasSheet>,
 }
 
 #[get("/<deck_id>/tabletop-simulator")]
@@ -269,11 +277,13 @@ pub async fn generate_tabletop_simulator(
     db: &State<DbConn>,
     config: &State<Config>,
     deck_id: i64,
-) -> Result<Json<Vec<AtlasResponse>>, (Status, Json<ErrorResponse>)> {
-    // 1. Fetch deck cards (sync DB operation, no auth required)
-    let deck_cards = {
+) -> Result<Json<TabletopSimulatorResponse>, (Status, Json<ErrorResponse>)> {
+    // 1. Fetch deck cards AND game card_back_image_url
+    let (deck_cards, card_back_image_url) = {
         let conn = db.0.lock().unwrap();
-        super::list_deck_cards_public(&conn, deck_id).map_err(|e| {
+
+        // Fetch deck cards
+        let deck_cards = super::list_deck_cards_public(&conn, deck_id).map_err(|e| {
             let (status, error) = match e {
                 super::GetDeckError::NotFound => (Status::NotFound, "Deck not found"),
                 super::GetDeckError::NotOwner => (Status::Forbidden, "Access denied"),
@@ -282,7 +292,23 @@ pub async fn generate_tabletop_simulator(
                 }
             };
             (status, Json(ErrorResponse::new(error)))
-        })?
+        })?;
+
+        // Fetch game card_back_image_url
+        // Query: deck -> collection -> game
+        let card_back: Option<String> = conn
+            .query_row(
+                "SELECT g.card_back_image_url
+                 FROM decks d
+                 JOIN collections c ON d.collection_id = c.id
+                 JOIN games g ON c.game_id = g.id
+                 WHERE d.id = ?1",
+                params![deck_id],
+                |row| row.get(0),
+            )
+            .ok();
+
+        (deck_cards, card_back)
     };
 
     // Validate deck is not empty
@@ -307,7 +333,7 @@ pub async fn generate_tabletop_simulator(
     let total_cards: i64 = deck_cards.iter().map(|c| c.quantity).sum();
     let atlas_count = ((total_cards as usize + 69) / 70).max(1);
 
-    let mut atlas_responses = Vec::new();
+    let mut sheets = Vec::new();
     let mut cached = true;
 
     for i in 0..atlas_count {
@@ -319,7 +345,7 @@ pub async fn generate_tabletop_simulator(
                 } else {
                     70
                 };
-                atlas_responses.push(AtlasResponse {
+                sheets.push(AtlasSheet {
                     url,
                     card_count: cards_in_atlas,
                 });
@@ -332,7 +358,10 @@ pub async fn generate_tabletop_simulator(
     }
 
     if cached {
-        return Ok(Json(atlas_responses));
+        return Ok(Json(TabletopSimulatorResponse {
+            card_back: card_back_image_url,
+            sheets,
+        }));
     }
 
     // 4. Generate atlases
@@ -347,7 +376,7 @@ pub async fn generate_tabletop_simulator(
         })?;
 
     // 5. Upload to S3
-    atlas_responses.clear();
+    sheets.clear();
     for (i, atlas) in atlases.iter().enumerate() {
         let key = crate::atlas::get_s3_key(deck_id, &deck_hash, i);
 
@@ -375,13 +404,16 @@ pub async fn generate_tabletop_simulator(
                 )
             })?;
 
-        atlas_responses.push(AtlasResponse {
+        sheets.push(AtlasSheet {
             url,
             card_count: atlas.card_count as i64,
         });
     }
 
-    Ok(Json(atlas_responses))
+    Ok(Json(TabletopSimulatorResponse {
+        card_back: card_back_image_url,
+        sheets,
+    }))
 }
 
 pub fn routes() -> Vec<rocket::Route> {

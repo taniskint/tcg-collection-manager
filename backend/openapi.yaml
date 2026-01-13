@@ -147,6 +147,11 @@ components:
           format: uri
           nullable: true
           example: "https://example.com/pokemon-logo.png"
+        card_back_image_url:
+          type: string
+          nullable: true
+          description: Optional URL/path to standardized card back image
+          example: "/images/pokemon-back.png"
 
     GameResponse:
       type: object
@@ -177,11 +182,48 @@ components:
           format: uri
           nullable: true
           example: "https://example.com/pokemon-logo.png"
+        card_back_image_url:
+          type: string
+          nullable: true
+          description: Optional URL/path to standardized card back image
+          example: "/images/pokemon-back.png"
         set_count:
           type: integer
           format: int64
           description: Number of sets in this game
           example: 5
+
+    AtlasSheet:
+      type: object
+      required:
+        - url
+        - card_count
+      properties:
+        url:
+          type: string
+          format: uri
+          description: S3 URL to the atlas texture
+          example: "https://s3.amazonaws.com/tcg-collection-atlases/decks/42/atlas-abc123-0.png"
+        card_count:
+          type: integer
+          format: int64
+          description: Number of cards in this atlas sheet
+          example: 60
+
+    TabletopSimulatorResponse:
+      type: object
+      required:
+        - sheets
+      properties:
+        card_back:
+          type: string
+          description: Optional URL/path to card back image (only present if game has card_back_image_url)
+          example: "/images/pokemon-back.png"
+        sheets:
+          type: array
+          items:
+            $ref: '#/components/schemas/AtlasSheet'
+          description: Array of atlas textures (10x7 card grids)
 
     CreateSetRequest:
       type: object
@@ -2224,6 +2266,85 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
+  /api/decks/{deck_id}/tabletop-simulator:
+    get:
+      summary: Generate Tabletop Simulator atlases
+      description: |
+        Generates texture atlases for Tabletop Simulator from a deck.
+        Creates 10x7 card grids, uploads to S3, and returns URLs.
+        This endpoint is public (no authentication) to allow TTS to call it.
+      operationId: generateTabletopSimulator
+      tags:
+        - Decks
+      parameters:
+        - name: deck_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Deck ID
+          example: 1
+      responses:
+        '200':
+          description: Atlas generation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TabletopSimulatorResponse'
+              examples:
+                withCardBack:
+                  summary: Deck from game with card back
+                  value:
+                    card_back: "/images/pokemon-back.png"
+                    sheets:
+                      - url: "https://s3.amazonaws.com/tcg-collection-atlases/decks/1/atlas-abc123-0.png"
+                        card_count: 60
+                withoutCardBack:
+                  summary: Deck from game without card back
+                  value:
+                    sheets:
+                      - url: "https://s3.amazonaws.com/tcg-collection-atlases/decks/2/atlas-def456-0.png"
+                        card_count: 40
+                multipleSheets:
+                  summary: Large deck with multiple sheets
+                  value:
+                    card_back: "/images/mtg-back.png"
+                    sheets:
+                      - url: "https://s3.amazonaws.com/tcg-collection-atlases/decks/3/atlas-ghi789-0.png"
+                        card_count: 70
+                      - url: "https://s3.amazonaws.com/tcg-collection-atlases/decks/3/atlas-ghi789-1.png"
+                        card_count: 25
+        '400':
+          description: Bad request - deck is empty
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Deck is empty"
+        '404':
+          description: Deck not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Deck not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                s3NotConfigured:
+                  value:
+                    error: "S3 not configured"
+                generationFailed:
+                  value:
+                    error: "Failed to generate atlases"
 
 tags:
   - name: Users

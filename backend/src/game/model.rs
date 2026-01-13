@@ -4,6 +4,7 @@ pub struct Game {
     pub id: i64,
     pub name: String,
     pub image_url: Option<String>,
+    pub card_back_image_url: Option<String>,
     pub set_count: i64,
 }
 
@@ -17,10 +18,11 @@ pub fn create(
     conn: &Connection,
     name: &str,
     image_url: Option<&str>,
+    card_back_image_url: Option<&str>,
 ) -> Result<i64, CreateGameError> {
     conn.execute(
-        "INSERT INTO games (name, image_url) VALUES (?1, ?2)",
-        params![name, image_url],
+        "INSERT INTO games (name, image_url, card_back_image_url) VALUES (?1, ?2, ?3)",
+        params![name, image_url, card_back_image_url],
     )
     .map_err(|e| {
         if let SqliteError::SqliteFailure(err, _) = &e
@@ -37,7 +39,7 @@ pub fn create(
 // TODO: Add card_count field when that feature is implemented
 pub fn get(conn: &Connection, id: i64) -> Result<Option<Game>, SqliteError> {
     let mut stmt = conn.prepare(
-        "SELECT g.id, g.name, g.image_url, COUNT(s.id) as set_count
+        "SELECT g.id, g.name, g.image_url, g.card_back_image_url, COUNT(s.id) as set_count
          FROM games g
          LEFT JOIN sets s ON g.id = s.game_id
          WHERE g.id = ?1
@@ -50,7 +52,8 @@ pub fn get(conn: &Connection, id: i64) -> Result<Option<Game>, SqliteError> {
             id: row.get(0)?,
             name: row.get(1)?,
             image_url: row.get(2)?,
-            set_count: row.get(3)?,
+            card_back_image_url: row.get(3)?,
+            set_count: row.get(4)?,
         })),
         None => Ok(None),
     }
@@ -58,7 +61,7 @@ pub fn get(conn: &Connection, id: i64) -> Result<Option<Game>, SqliteError> {
 
 pub fn list(conn: &Connection) -> Result<Vec<Game>, SqliteError> {
     let mut stmt = conn.prepare(
-        "SELECT g.id, g.name, g.image_url, COUNT(s.id) as set_count
+        "SELECT g.id, g.name, g.image_url, g.card_back_image_url, COUNT(s.id) as set_count
          FROM games g
          LEFT JOIN sets s ON g.id = s.game_id
          GROUP BY g.id",
@@ -69,7 +72,8 @@ pub fn list(conn: &Connection) -> Result<Vec<Game>, SqliteError> {
                 id: row.get(0)?,
                 name: row.get(1)?,
                 image_url: row.get(2)?,
-                set_count: row.get(3)?,
+                card_back_image_url: row.get(3)?,
+                set_count: row.get(4)?,
             })
         })?
         .collect::<Result<Vec<_>, _>>()?;
@@ -82,7 +86,8 @@ pub fn init_table(conn: &Connection) -> Result<(), SqliteError> {
         "CREATE TABLE IF NOT EXISTS games (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL UNIQUE,
-            image_url TEXT
+            image_url TEXT,
+            card_back_image_url TEXT
         )",
         [],
     )?;
