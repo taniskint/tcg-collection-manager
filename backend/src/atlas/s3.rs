@@ -30,7 +30,7 @@ pub async fn check_cache(
             if error_msg.contains("NotFound") || error_msg.contains("404") {
                 Ok(None)
             } else {
-                Err(S3Error::UploadFailed(format!("Cache check failed: {}", error_msg)))
+                Err(S3Error::UploadFailed)
             }
         }
     }
@@ -64,6 +64,6 @@ pub async fn upload_atlas(
             );
             Ok(url)
         }
-        Err(e) => Err(S3Error::UploadFailed(format!("Upload failed: {:?}", e))),
+        Err(_) => Err(S3Error::UploadFailed),
     }
 }

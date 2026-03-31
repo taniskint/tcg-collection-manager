@@ -21,22 +21,24 @@ pub struct Atlas {
 /// Returns a HashMap of card_id -> image
 pub async fn load_and_dedupe_images(
     deck_cards: &[DeckCard],
+    frontend_path: &str,
 ) -> Result<HashMap<i64, DynamicImage>, ImageError> {
     // Deduplicate by image URL
     let mut url_to_id: HashMap<String, i64> = HashMap::new();
     for card in deck_cards {
-        if let Some(ref url) = card.image_url {
-            if !url.is_empty() {
-                url_to_id.entry(url.clone()).or_insert(card.id);
-            }
+        if let Some(ref url) = card.image_url
+            && !url.is_empty()
+        {
+            url_to_id.entry(url.clone()).or_insert(card.id);
         }
     }
 
     // Load images in parallel
     let mut tasks = Vec::new();
     for (url, card_id) in url_to_id.into_iter() {
+        let frontend_path_owned = frontend_path.to_string();
         let task = task::spawn(async move {
-            let result = load_image(&url).await;
+            let result = load_image(&url, &frontend_path_owned).await;
             (card_id, url, result)
         });
         tasks.push(task);
@@ -47,7 +49,7 @@ pub async fn load_and_dedupe_images(
     for task in tasks {
         let (card_id, url, result) = task
             .await
-            .map_err(|_| ImageError::TaskJoinError)?;
+            .map_err(|_| ImageError::TaskJoin)?;
 
         match result {
             Ok(img) => {
@@ -63,38 +65,38 @@ pub async fn load_and_dedupe_images(
 }
 
 /// Load a single image from local filesystem or remote URL
-async fn load_image(url: &str) -> Result<DynamicImage, ImageError> {
+async fn load_image(url: &str, frontend_path: &str) -> Result<DynamicImage, ImageError> {
     // Check if it's a local path
-    let path = format!("../frontend{}", url);
+    let path = format!("{}{}", frontend_path, url);
 
     if Path::new(&path).exists() {
         // Load from local filesystem
         let path_clone = path.clone();
         task::spawn_blocking(move || {
             image::open(&path_clone)
-                .map_err(|e| ImageError::LoadError(format!("Failed to open {}: {}", path_clone, e)))
+                .map_err(|_| ImageError::Load)
         })
         .await
-        .map_err(|_| ImageError::TaskJoinError)?
+        .map_err(|_| ImageError::TaskJoin)?
     } else {
         // Try loading from remote URL
         let url_string = url.to_string();
         let response = reqwest::get(&url_string)
             .await
-            .map_err(|e| ImageError::NetworkError(format!("Failed to fetch {}: {}", url_string, e)))?;
+            .map_err(|_| ImageError::Network)?;
 
         let bytes = response
             .bytes()
             .await
-            .map_err(|e| ImageError::NetworkError(format!("Failed to read bytes: {}", e)))?;
+            .map_err(|_| ImageError::Network)?;
 
         let bytes_vec = bytes.to_vec();
         task::spawn_blocking(move || {
             image::load_from_memory(&bytes_vec)
-                .map_err(|e| ImageError::DecodeError(format!("Failed to decode image: {}", e)))
+                .map_err(|_| ImageError::Decode)
         })
         .await
-        .map_err(|_| ImageError::TaskJoinError)?
+        .map_err(|_| ImageError::TaskJoin)?
     }
 }
 

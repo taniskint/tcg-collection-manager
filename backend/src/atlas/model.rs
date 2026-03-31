@@ -3,35 +3,34 @@ use crate::deck::DeckCard;
 
 #[derive(Debug)]
 pub enum ImageError {
-    LoadError(String),
-    NetworkError(String),
-    DecodeError(String),
-    TaskJoinError,
+    Load,
+    Network,
+    Decode,
+    TaskJoin,
 }
 
 #[derive(Debug)]
 pub enum S3Error {
-    UploadFailed(String),
-    ConfigError(String),
+    UploadFailed,
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub enum AtlasError {
-    ImageError(ImageError),
-    S3Error(S3Error),
+    Image(ImageError),
+    S3(S3Error),
     NoValidImages,
-    EncodingError,
 }
 
 impl From<ImageError> for AtlasError {
     fn from(err: ImageError) -> Self {
-        AtlasError::ImageError(err)
+        AtlasError::Image(err)
     }
 }
 
 impl From<S3Error> for AtlasError {
     fn from(err: S3Error) -> Self {
-        AtlasError::S3Error(err)
+        AtlasError::S3(err)
     }
 }
 

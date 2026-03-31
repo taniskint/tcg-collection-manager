@@ -26,6 +26,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Deserialize, Clone)]
 pub struct Config {
     pub admin_api_key: String,
+    pub frontend_path: String,
     pub s3: Option<S3Config>,
 }
 
@@ -39,6 +40,7 @@ impl Config {
     pub fn test_config(admin_api_key: &str) -> Self {
         Self {
             admin_api_key: admin_api_key.to_string(),
+            frontend_path: "../frontend".to_string(),
             s3: None,
         }
     }
@@ -128,10 +130,11 @@ fn load_config() -> Config {
 }
 
 pub fn build_rocket(db_conn: DbConn, config: Config) -> rocket::Rocket<rocket::Build> {
+    let frontend_path = config.frontend_path.clone();
     rocket::build()
         .manage(config)
         .manage(db_conn)
-        .mount("/", FileServer::from("../frontend"))
+        .mount("/", FileServer::from(frontend_path))
         .mount("/api/users", user::routes::routes())
         .mount("/api/sessions", session::routes::routes())
         .mount("/api/games", game::routes::routes())

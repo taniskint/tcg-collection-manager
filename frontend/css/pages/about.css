@@ -1,0 +1,96 @@
+/* About page layout */
+.about-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 16px;
+}
+
+/* About hero section */
+.about-hero {
+    text-align: center;
+    padding: 48px 16px;
+}
+
+.about-hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 16px;
+    color: var(--text-emphasis);
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    line-height: 1.5;
+    color: var(--text-primary);
+}
+
+/* About sections */
+.about-section {
+    padding: 32px 16px;
+}
+
+.about-section h2 {
+    font-size: 1.8rem;
+    margin-bottom: 16px;
+    color: var(--text-emphasis);
+}
+
+.about-section p {
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+.about-section p:last-child {
+    margin-bottom: 0;
+}
+
+/* Call to action section */
+.about-cta {
+    text-align: center;
+    padding: 48px 16px;
+    margin-top: 32px;
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.about-cta h2 {
+    font-size: 1.8rem;
+    margin-bottom: 16px;
+    color: var(--text-emphasis);
+}
+
+.about-cta p {
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+.cta-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .about-hero h1 {
+        font-size: 1.8rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+    }
+
+    .about-section h2,
+    .about-cta h2 {
+        font-size: 1.5rem;
+    }
+
+    .cta-buttons {
+        flex-direction: column;
+    }
+
+    .cta-buttons .btn {
+        width: 100%;
+    }
+}

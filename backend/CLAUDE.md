@@ -78,7 +78,17 @@ Tests use `create_test_client()` from `src/test_helpers.rs` which:
 Create `config.toml` (see `config.example.toml`):
 ```toml
 admin_api_key = "your-secret-key"
+frontend_path = "../frontend"
+
+[s3]
+bucket = "your-bucket-name"
+region = "us-west-2"
 ```
+
+**Notes:**
+- `admin_api_key` is required for admin endpoints
+- `frontend_path` is required and specifies the location of static files
+- `s3` configuration is optional and only needed for TTS deck atlas generation
 
 ## API Documentation
 

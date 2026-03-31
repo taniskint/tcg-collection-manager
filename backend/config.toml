@@ -1,4 +1,5 @@
 admin_api_key = "test-key"
+frontend_path = "../frontend"
 
 [s3]
 bucket = "test-tcg-tts-deck-atlases"

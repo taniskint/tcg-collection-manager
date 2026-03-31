@@ -1,8 +1,30 @@
+/* Nav right section for logged-out view */
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-right: 8px;
+}
+
+.about-link {
+    color: var(--text-primary);
+    font-weight: 500;
+    transition: color 0.1s linear;
+}
+
+.about-link:hover {
+    color: var(--text-emphasis);
+}
+
+.about-active {
+    color: var(--text-emphasis);
+    cursor: default;
+}
+
 /* Auth buttons in nav for logged-out view */
 .auth-buttons {
     display: flex;
     gap: 8px;
-    padding-right: 8px;
 }
 
 /* Landing page styles (logged-out view) */
@@ -101,48 +123,16 @@
     padding: 24px 0;
 }
 
+.welcome-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+}
+
 .welcome-section h1 {
     color: var(--text-emphasis);
     margin-bottom: 8px;
-}
-
-.quick-actions {
-    padding: 16px 0;
-}
-
-.quick-actions h2 {
-    margin-bottom: 16px;
-    color: var(--text-emphasis);
-}
-
-.action-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-}
-
-.action-card {
-    flex: 1 1 140px;
-    max-width: 180px;
-    padding: 24px 16px;
-    text-align: center;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background-color: var(--bg-elevated);
-    transition: box-shadow 0.1s linear;
-}
-
-.action-card:hover {
-    box-shadow: 0 0 8px var(--border);
-}
-
-.action-icon {
-    font-size: 2.5rem;
-    margin-bottom: 12px;
-}
-
-.action-card p {
-    font-weight: 500;
 }
 
 /* Recent collections/decks sections */
@@ -279,6 +269,14 @@
 
 /* Responsive adjustments */
 @media (max-width: 600px) {
+    .nav-right {
+        gap: 8px;
+    }
+
+    .about-link {
+        font-size: 0.9rem;
+    }
+
     .hero h1 {
         font-size: 1.8rem;
     }
@@ -292,8 +290,13 @@
         max-width: 100%;
     }
 
-    .action-card {
-        flex: 1 1 100%;
-        max-width: 100%;
+    .welcome-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .welcome-content .btn {
+        align-self: stretch;
+        text-align: center;
     }
 }

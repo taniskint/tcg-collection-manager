@@ -11,9 +11,10 @@ use crate::deck::DeckCard;
 /// Returns a vector of atlases with their images and card counts
 pub async fn generate_atlases(
     deck_cards: &[DeckCard],
+    frontend_path: &str,
 ) -> Result<Vec<image::Atlas>, AtlasError> {
     // 1. Load and deduplicate images
-    let images = image::load_and_dedupe_images(deck_cards).await?;
+    let images = image::load_and_dedupe_images(deck_cards, frontend_path).await?;
 
     if images.is_empty() {
         return Err(AtlasError::NoValidImages);

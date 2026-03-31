@@ -1,0 +1,11 @@
+# Admin API key for authenticated operations
+admin_api_key = "your-secret-admin-key-here"
+
+# Path to frontend static files directory
+# Relative paths are relative to the backend directory
+frontend_path = "../frontend"
+
+# Optional S3 configuration for TTS deck atlas caching
+[s3]
+bucket = "your-s3-bucket-name"
+region = "us-west-2"

@@ -331,7 +331,7 @@ pub async fn generate_tabletop_simulator(
     // 3. Check cache
     let s3_client = crate::atlas::create_s3_client().await;
     let total_cards: i64 = deck_cards.iter().map(|c| c.quantity).sum();
-    let atlas_count = ((total_cards as usize + 69) / 70).max(1);
+    let atlas_count = (total_cards as usize).div_ceil(70).max(1);
 
     let mut sheets = Vec::new();
     let mut cached = true;
@@ -365,7 +365,7 @@ pub async fn generate_tabletop_simulator(
     }
 
     // 4. Generate atlases
-    let atlases = crate::atlas::generate_atlases(&deck_cards)
+    let atlases = crate::atlas::generate_atlases(&deck_cards, &config.frontend_path)
         .await
         .map_err(|e| {
             eprintln!("Atlas generation error: {:?}", e);
