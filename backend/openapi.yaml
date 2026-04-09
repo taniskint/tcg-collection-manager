@@ -41,6 +41,8 @@ components:
       properties:
         username:
           type: string
+          maxLength: 50
+          description: Username for the account (max 50 characters)
           example: "johndoe"
         email:
           type: string
@@ -49,6 +51,8 @@ components:
         password:
           type: string
           format: password
+          maxLength: 200
+          description: Password for the account (max 200 characters)
           example: "securepassword123"
 
     UserResponse:
@@ -68,7 +72,8 @@ components:
       properties:
         username:
           type: string
-          description: New username (optional)
+          maxLength: 50
+          description: New username (optional, max 50 characters)
           example: "johndoe_updated"
         email:
           type: string
@@ -78,7 +83,8 @@ components:
         password:
           type: string
           format: password
-          description: New password (optional)
+          maxLength: 200
+          description: New password (optional, max 200 characters)
           example: "newsecurepassword456"
         current_password:
           type: string
@@ -755,7 +761,7 @@ paths:
   /api/users:
     post:
       summary: Create a new user
-      description: Register a new user account with username, email, and password
+      description: Register a new user account with username, email, and password. Username must be 50 characters or less, and password must be 200 characters or less.
       operationId: createUser
       tags:
         - Users
@@ -772,6 +778,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Validation error (username or password length exceeded)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                usernameTooLong:
+                  value:
+                    error: "Username must be 50 characters or less"
+                passwordTooLong:
+                  value:
+                    error: "Password must be 200 characters or less"
         '409':
           description: Username or email already exists
           content:
@@ -795,7 +814,7 @@ paths:
   /api/users/{id}:
     patch:
       summary: Update user account
-      description: Update username, email, and/or password. Requires current password for verification.
+      description: Update username, email, and/or password. Requires current password for verification. Username must be 50 characters or less, and password must be 200 characters or less.
       operationId: updateUser
       tags:
         - Users
@@ -819,13 +838,21 @@ paths:
         '204':
           description: User updated successfully
         '400':
-          description: No fields provided to update
+          description: Validation error (no fields provided, or username/password length exceeded)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-              example:
-                error: "No fields to update"
+              examples:
+                noFields:
+                  value:
+                    error: "No fields to update"
+                usernameTooLong:
+                  value:
+                    error: "Username must be 50 characters or less"
+                passwordTooLong:
+                  value:
+                    error: "Password must be 200 characters or less"
         '401':
           description: Invalid current password or not authenticated
           content:

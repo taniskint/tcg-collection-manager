@@ -244,6 +244,104 @@ fn test_create_user_response_only_contains_id() {
     assert!(body.get("password_hash").is_none());
 }
 
+#[test]
+fn test_create_user_username_too_long() {
+    let client = create_test_client();
+
+    // Create a username with 51 characters (exceeds 50 limit)
+    let long_username = "a".repeat(51);
+
+    let response = client
+        .post("/api/users")
+        .header(ContentType::JSON)
+        .body(
+            json!({
+                "username": long_username,
+                "email": "test@example.com",
+                "password": "password123"
+            })
+            .to_string(),
+        )
+        .dispatch();
+
+    assert_eq!(response.status(), Status::BadRequest);
+
+    let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
+    assert_eq!(body["error"], "Username must be 50 characters or less");
+}
+
+#[test]
+fn test_create_user_password_too_long() {
+    let client = create_test_client();
+
+    // Create a password with 201 characters (exceeds 200 limit)
+    let long_password = "a".repeat(201);
+
+    let response = client
+        .post("/api/users")
+        .header(ContentType::JSON)
+        .body(
+            json!({
+                "username": "testuser",
+                "email": "test@example.com",
+                "password": long_password
+            })
+            .to_string(),
+        )
+        .dispatch();
+
+    assert_eq!(response.status(), Status::BadRequest);
+
+    let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
+    assert_eq!(body["error"], "Password must be 200 characters or less");
+}
+
+#[test]
+fn test_create_user_username_max_length() {
+    let client = create_test_client();
+
+    // Create a username with exactly 50 characters (at the limit)
+    let max_username = "a".repeat(50);
+
+    let response = client
+        .post("/api/users")
+        .header(ContentType::JSON)
+        .body(
+            json!({
+                "username": max_username,
+                "email": "test@example.com",
+                "password": "password123"
+            })
+            .to_string(),
+        )
+        .dispatch();
+
+    assert_eq!(response.status(), Status::Ok);
+}
+
+#[test]
+fn test_create_user_password_max_length() {
+    let client = create_test_client();
+
+    // Create a password with exactly 200 characters (at the limit)
+    let max_password = "a".repeat(200);
+
+    let response = client
+        .post("/api/users")
+        .header(ContentType::JSON)
+        .body(
+            json!({
+                "username": "testuser",
+                "email": "test@example.com",
+                "password": max_password
+            })
+            .to_string(),
+        )
+        .dispatch();
+
+    assert_eq!(response.status(), Status::Ok);
+}
+
 // ============================================================================
 // PATCH /api/users/:id (Update User)
 // ============================================================================
@@ -423,7 +521,7 @@ fn test_update_user_without_auth() {
 #[test]
 fn test_update_user_not_owner() {
     let client = create_test_client();
-    let user1 = create_user(&client, "alice", "alice@example.com", "password123");
+    let _user1 = create_user(&client, "alice", "alice@example.com", "password123");
     let user2 = create_user(&client, "bob", "bob@example.com", "password456");
     let user2_id = user2["id"].as_i64().unwrap();
     let session_id = login(&client, "alice", "password123");
@@ -444,7 +542,7 @@ fn test_update_user_not_owner() {
 #[test]
 fn test_update_user_not_found() {
     let client = create_test_client();
-    let user = create_user(&client, "alice", "alice@example.com", "password123");
+    let _user = create_user(&client, "alice", "alice@example.com", "password123");
     let session_id = login(&client, "alice", "password123");
 
     let status = update_user(
@@ -483,7 +581,7 @@ fn test_update_user_wrong_current_password() {
 #[test]
 fn test_update_user_duplicate_username() {
     let client = create_test_client();
-    let user1 = create_user(&client, "alice", "alice@example.com", "password123");
+    let _user1 = create_user(&client, "alice", "alice@example.com", "password123");
     let user2 = create_user(&client, "bob", "bob@example.com", "password456");
     let user2_id = user2["id"].as_i64().unwrap();
     let session_id = login(&client, "bob", "password456");
@@ -504,7 +602,7 @@ fn test_update_user_duplicate_username() {
 #[test]
 fn test_update_user_duplicate_email() {
     let client = create_test_client();
-    let user1 = create_user(&client, "alice", "alice@example.com", "password123");
+    let _user1 = create_user(&client, "alice", "alice@example.com", "password123");
     let user2 = create_user(&client, "bob", "bob@example.com", "password456");
     let user2_id = user2["id"].as_i64().unwrap();
     let session_id = login(&client, "bob", "password456");
@@ -520,6 +618,62 @@ fn test_update_user_duplicate_email() {
     );
 
     assert_eq!(status, Status::Conflict);
+}
+
+#[test]
+fn test_update_user_username_too_long() {
+    let client = create_test_client();
+    let user = create_user(&client, "alice", "alice@example.com", "password123");
+    let user_id = user["id"].as_i64().unwrap();
+    let session_id = login(&client, "alice", "password123");
+
+    let long_username = "a".repeat(51);
+
+    let response = client
+        .patch(format!("/api/users/{}", user_id))
+        .header(ContentType::JSON)
+        .cookie(rocket::http::Cookie::new("session_id", &session_id))
+        .body(
+            json!({
+                "username": long_username,
+                "current_password": "password123"
+            })
+            .to_string(),
+        )
+        .dispatch();
+
+    assert_eq!(response.status(), Status::BadRequest);
+
+    let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
+    assert_eq!(body["error"], "Username must be 50 characters or less");
+}
+
+#[test]
+fn test_update_user_password_too_long() {
+    let client = create_test_client();
+    let user = create_user(&client, "alice", "alice@example.com", "password123");
+    let user_id = user["id"].as_i64().unwrap();
+    let session_id = login(&client, "alice", "password123");
+
+    let long_password = "a".repeat(201);
+
+    let response = client
+        .patch(format!("/api/users/{}", user_id))
+        .header(ContentType::JSON)
+        .cookie(rocket::http::Cookie::new("session_id", &session_id))
+        .body(
+            json!({
+                "password": long_password,
+                "current_password": "password123"
+            })
+            .to_string(),
+        )
+        .dispatch();
+
+    assert_eq!(response.status(), Status::BadRequest);
+
+    let body: Value = serde_json::from_str(&response.into_string().unwrap()).unwrap();
+    assert_eq!(body["error"], "Password must be 200 characters or less");
 }
 
 #[test]
@@ -756,7 +910,7 @@ fn test_delete_user_without_auth() {
 #[test]
 fn test_delete_user_not_owner() {
     let client = create_test_client();
-    let user1 = create_user(&client, "alice", "alice@example.com", "password123");
+    let _user1 = create_user(&client, "alice", "alice@example.com", "password123");
     let user2 = create_user(&client, "bob", "bob@example.com", "password456");
     let user2_id = user2["id"].as_i64().unwrap();
     let session_id = login(&client, "alice", "password123");
@@ -769,7 +923,7 @@ fn test_delete_user_not_owner() {
 #[test]
 fn test_delete_user_not_found() {
     let client = create_test_client();
-    let user = create_user(&client, "alice", "alice@example.com", "password123");
+    let _user = create_user(&client, "alice", "alice@example.com", "password123");
     let session_id = login(&client, "alice", "password123");
 
     let status = delete_user(&client, &session_id, 999, "password123");

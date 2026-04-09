@@ -35,6 +35,22 @@ pub fn create(
     db: &State<DbConn>,
     req: Json<CreateUserRequest>,
 ) -> Result<Json<UserResponse>, (Status, Json<ErrorResponse>)> {
+    // Validate username length
+    if req.username.len() > 50 {
+        return Err((
+            Status::BadRequest,
+            Json(ErrorResponse::new("Username must be 50 characters or less")),
+        ));
+    }
+
+    // Validate password length
+    if req.password.len() > 200 {
+        return Err((
+            Status::BadRequest,
+            Json(ErrorResponse::new("Password must be 200 characters or less")),
+        ));
+    }
+
     let conn = db.0.lock().unwrap();
 
     let id = super::create(&conn, &req.username, &req.email, &req.password).map_err(|e| {
@@ -64,6 +80,26 @@ pub fn update(
     // Verify ownership
     if auth.0.id != user_id {
         return Err((Status::Forbidden, Json(ErrorResponse::new("Access denied"))));
+    }
+
+    // Validate username length if provided
+    if let Some(username) = &req.username {
+        if username.len() > 50 {
+            return Err((
+                Status::BadRequest,
+                Json(ErrorResponse::new("Username must be 50 characters or less")),
+            ));
+        }
+    }
+
+    // Validate password length if provided
+    if let Some(password) = &req.password {
+        if password.len() > 200 {
+            return Err((
+                Status::BadRequest,
+                Json(ErrorResponse::new("Password must be 200 characters or less")),
+            ));
+        }
     }
 
     let conn = db.0.lock().unwrap();
