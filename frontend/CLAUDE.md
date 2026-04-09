@@ -36,7 +36,7 @@ Uses "Penumbra" color scheme with CSS custom properties:
 
 ## API Reference
 
-See `../backend/openapi.yaml` for full API spec. Key endpoints:
+See `openapi.yaml` for full API spec. Key endpoints:
 
 - `GET /api/games` - List games
 - `GET /api/games/{id}/sets` - List sets in a game

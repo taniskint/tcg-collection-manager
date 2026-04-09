@@ -68,7 +68,7 @@
 
                     <div class="form-group">
                         <label for="new-username">New Username (optional)</label>
-                        <input type="text" id="new-username" placeholder="Leave blank to keep current">
+                        <input type="text" id="new-username" placeholder="Leave blank to keep current" maxlength="50">
                     </div>
 
                     <div class="form-group">
@@ -78,18 +78,18 @@
 
                     <div class="form-group">
                         <label for="new-password">New Password (optional)</label>
-                        <input type="password" id="new-password" placeholder="Leave blank to keep current" minlength="8">
+                        <input type="password" id="new-password" placeholder="Leave blank to keep current" minlength="8" maxlength="200">
                         <span class="input-hint">Must be at least 8 characters.</span>
                     </div>
 
                     <div class="form-group">
                         <label for="confirm-password">Confirm New Password</label>
-                        <input type="password" id="confirm-password" placeholder="Required if changing password">
+                        <input type="password" id="confirm-password" placeholder="Required if changing password" maxlength="200">
                     </div>
 
                     <div class="form-group">
                         <label for="current-password">Current Password *</label>
-                        <input type="password" id="current-password" required placeholder="Required to make any changes">
+                        <input type="password" id="current-password" required placeholder="Required to make any changes" maxlength="200">
                     </div>
 
                     <div id="update-error" class="form-error" hidden></div>
@@ -128,7 +128,7 @@
 
                 <div class="form-group">
                     <label for="delete-password">Enter your password to confirm</label>
-                    <input type="password" id="delete-password" required placeholder="Your password">
+                    <input type="password" id="delete-password" required placeholder="Your password" maxlength="200">
                 </div>
 
                 <div id="delete-error" class="form-error" hidden></div>
